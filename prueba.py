@@ -1,2 +1,2 @@
 print("Hola soy Pablo y me gusta el gore")
-print("Soy el capitan CP y asi")
+print("veras niu... el contexto es el siguiente, toda mi vida he sido un")

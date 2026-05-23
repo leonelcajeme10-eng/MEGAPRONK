@@ -22,10 +22,11 @@ while ejecutando:
             ejecutando = False
         
 
-    
+    dt = clock.tick(60) / 1000.0
+
     pantalla.fill((30, 30, 30))
 
-    jugador.update()
+    jugador.update(dt)
     jugador.dibujar(pantalla)
     pygame.display.flip()
 

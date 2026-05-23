@@ -30,13 +30,13 @@ class Player:
             self.dy = self.speed
         
     
-    def movimiento(self,dt):
+    def movimiento(self):
         if self.dy != 0 and self.dx != 0:
 
             self.dx *= 0.7071
             self.dy *= 0.7071
-            self.x += self.dx * dt
-            self.y += self.dy * dt
+            self.x += self.dx 
+            self.y += self.dy 
         else:
             self.x += self.dx
             self.y += self.dy

@@ -9,6 +9,7 @@ class Player:
         self.dx = 0
         self.dy = 0
         self.speed = 1.8
+        self.dt = 1
     
     def input(self):
         keys = pygame.key.get_pressed()

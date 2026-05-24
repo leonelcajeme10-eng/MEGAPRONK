@@ -1,6 +1,6 @@
 import pygame
 import math
-from prong import Especial
+from prong import Especial, Principal
 
 class Player:
     def __init__(self):
@@ -13,6 +13,7 @@ class Player:
         self.speed = 20
         self.dt = 1
         self.esp = Especial()
+        self.principal = Principal()
     
     def input(self):
         keys = pygame.key.get_pressed()
@@ -38,10 +39,19 @@ class Player:
         if botones[2]:
             self.lanzarEspecial()
         
+        # Click izquierdo para ataque principal
+        if botones[0]:
+            self.ataquePrincipal()
+        
     def lanzarEspecial(self):
         mouse = pygame.mouse.get_pos()
         dir = math.atan2(mouse[1] - self.y, mouse[0] - self.x)
         self.esp.nuevoProyectil(dir, [self.x + 25 + math.cos(dir) * 40, self.y + 25 + math.sin(dir) * 40 ])
+
+    def ataquePrincipal(self):
+        # usar la posición central del jugador para crear la hitbox
+        center = [self.x + 25, self.y + 25]
+        self.principal.atacar(center)
 
     def movimiento(self):
         if self.dy != 0 and self.dx != 0:
@@ -58,11 +68,12 @@ class Player:
         self.input()
         self.movimiento()
         self.esp.update(dt)
+        self.principal.update(dt, [self.dx, self.dy])
     
     def dibujar(self,pantalla):
         pygame.draw.rect(pantalla,"red",(self.x,self.y,50,50))
         for x in self.esp.proyectiles:
-            pygame.draw.circle(pantalla, "blue", x.posicion, x.radio)
-
-
-
+            pygame.draw.rect(pantalla,"blue",(x.posicion[0] - x.dimension[0] /2, x.posicion[1] - x.dimension[1] /2, x.dimension[0], x.dimension[1]))
+        
+        for x in self.principal.hitbox:
+            pygame.draw.rect(pantalla,"blue",(x.posicion[0] - x.dimension[0] /2, x.posicion[1] - x.dimension[1] /2, x.dimension[0], x.dimension[1]))

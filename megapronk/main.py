@@ -2,6 +2,7 @@ import pygame
 from player import Player
 from enemy import Enemy
 from mapa import Mapa
+from camara import Camara
 
 pygame.init()
 
@@ -15,6 +16,7 @@ pygame.display.set_caption("Megapronk")
 jugador = Player()
 enemigo = Enemy()
 mapa = Mapa()
+camara = Camara()
 
 ejecutando = True
 
@@ -28,15 +30,15 @@ while ejecutando:
 
     dt = clock.tick(60) / 1000.0
 
+    jugador.update(dt,mapa,camara)
+    enemigo.update(jugador,dt)
+    camara.update(jugador,dt)
+
     pantalla.fill((30, 30, 30))
 
-    
-    
-    mapa.update(pantalla,jugador)
-    jugador.update(dt,mapa)
-    enemigo.update(jugador,dt)
-    jugador.dibujar(pantalla)
-    enemigo.dibujar(pantalla)
+    mapa.update(pantalla,camara)
+    jugador.dibujar(pantalla,camara)
+    enemigo.dibujar(pantalla,camara)
     pygame.display.flip()
 
     

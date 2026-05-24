@@ -6,7 +6,6 @@ from mapa import Mapa
 pygame.init()
 
 
-
 pantalla = pygame.display.set_mode((1920,1080))
 
 clock = pygame.time.Clock()

@@ -27,6 +27,7 @@ class Enemy:
         
         def update(self,jugador,dt):
             self.movimiento(jugador,dt)
+            print("leo neo")
 
         
         def dibujar(self,pantalla):

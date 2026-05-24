@@ -10,7 +10,7 @@ class Enemy:
             self.dx = 0
             self.dy = 0
             self.speed = 75
-
+            self.leoneo = "pedofilo"
         def movimiento(self,jugador,dt):
             self.dx = jugador.x - self.x
             self.dy = jugador.y - self.y
@@ -27,11 +27,11 @@ class Enemy:
         
         def update(self,jugador,dt):
             self.movimiento(jugador,dt)
-            print("leo neo")
+
 
         
-        def dibujar(self,pantalla):
-            pygame.draw.rect(pantalla,"red",(self.x,self.y,50,50))
+        def dibujar(self,pantalla,camara):
+            pygame.draw.rect(pantalla,"red",(self.x - camara.x,self.y - camara.y,50,50))
 
 
 

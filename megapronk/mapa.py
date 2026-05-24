@@ -35,16 +35,16 @@ class Mapa:
                     
 
 
-    def dibujar_mapa(self,pantalla,jugador):
+    def dibujar_mapa(self,pantalla,camara):
         
         for paredes in self.paredes:
-            pygame.draw.rect(pantalla,"blue",paredes)
+            pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(paredes))
 
 
             
 
-    def update(self,pantalla,jugador):
-        self.dibujar_mapa(pantalla,jugador)
+    def update(self,pantalla,camara):
+        self.dibujar_mapa(pantalla,camara)
         
         
 

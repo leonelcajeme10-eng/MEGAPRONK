@@ -46,7 +46,7 @@ class Player:
         
         # Click izquierdo para ataque principal
         if botones[0]:
-            self.ataquePrincipal()
+            self.ataquePrincipal(camara)
         
     def lanzarEspecial(self,camara):
         mouse = pygame.mouse.get_pos()
@@ -55,10 +55,26 @@ class Player:
         dir = math.atan2(mouse_mundo[1] - centro[1], mouse_mundo[0] - centro[0])
         self.esp.nuevoProyectil(dir, [centro[0] + math.cos(dir) * 40, centro[1] + math.sin(dir) * 40 ])
 
-    def ataquePrincipal(self):
+    def ataquePrincipal(self, camara):
         # usar la posición central del jugador para crear la hitbox
+        mouse = pygame.mouse.get_pos()
+        mouse_mundo = [mouse[0] + camara.x, mouse[1] + camara.y]
+        centro = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
+        dir = math.atan2(mouse_mundo[1] - centro[1], mouse_mundo[0] - centro[0])
+        grado = math.degrees(dir)
+        grado = grado % 360
+
+        if grado >= 45 and grado < 135:
+            dir = math.pi / 2
+        elif grado >= 135 and grado < 225:
+            dir = math.pi
+        elif grado >= 225 and grado < 315:
+            dir = 3 * math.pi / 2
+        else:
+            dir = 0
+
         center = [self.x + 25, self.y + 25]
-        self.principal.atacar(center)
+        self.principal.atacar(center, dir, [self.tamano_x, self.tamano_y])
 
     def movimiento(self,mapa_rect):
         if self.dy != 0 and self.dx != 0:
@@ -109,7 +125,8 @@ class Player:
         self.input(camara)
         self.movimiento(mapa.paredes)
         self.esp.update(dt)
-        self.principal.update(dt, [self.dx, self.dy])
+        center = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
+        self.principal.update(dt, center)
     
     def dibujar(self,pantalla,camara):
         pygame.draw.rect(pantalla,"red",(self.x - camara.x,self.y - camara.y,self.tamano_x,self.tamano_y))

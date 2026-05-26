@@ -3,6 +3,7 @@ from player import Player
 from enemy import Enemy
 from mapa import Mapa
 from camara import Camara
+from prong import Proyectil, ProyectilOscilante
 from ui import UI
 
 pygame.init()
@@ -19,6 +20,9 @@ mapa = Mapa()
 camara = Camara()
 ui = UI()
 
+jugador.agregarProng(pygame.K_1, Proyectil)
+jugador.agregarProng(pygame.K_2, ProyectilOscilante)
+
 ejecutando = True
 
 while ejecutando:
@@ -27,7 +31,6 @@ while ejecutando:
         print(evento)
         if evento.type == pygame.QUIT:
             ejecutando = False
-        
 
     dt = clock.tick(60) / 1000.0
 

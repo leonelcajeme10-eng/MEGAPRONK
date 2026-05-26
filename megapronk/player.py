@@ -114,9 +114,6 @@ class Player:
                     elif self.dy < 0:
                         self.y = pared.bottom
 
-    def seguimiento_camara(self):
-        pass
-
 
         
     def update(self, dt,mapa,camara):

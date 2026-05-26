@@ -1,6 +1,6 @@
 import pygame
 import math
-from prong import Especial, Principal
+from prong import Prongs, Principal
 from camara import Camara
 
 class Player:
@@ -21,11 +21,11 @@ class Player:
         self.tamano_y = 50
         self.speed = 16
         self.dt = 1
-        self.boton_x =False
+        self.boton_x = False
         self.boton_y = False
-        self.esp = Especial()
+        self.prongs = Prongs()
         self.principal = Principal()
-    
+
     def input(self,camara):
         keys = pygame.key.get_pressed()
 
@@ -43,23 +43,27 @@ class Player:
 
         if keys[pygame.K_s]:
             self.dy = self.speed
-        
+
+        print(len(self.prongs.especiales))
+
+        for prong in self.prongs.especiales:
+            if keys[prong.tecla]:
+                self.lanzarEspecial(camara, prong)
+
         botones = pygame.mouse.get_pressed()
 
-        # Click derecho
-        if botones[2]:
-            self.lanzarEspecial(camara)
-        
-        # Click izquierdo para ataque principal
         if botones[0]:
             self.ataquePrincipal(camara)
-        
-    def lanzarEspecial(self,camara):
+
+    def agregarProng(self, tecla, especial):
+        self.prongs.asignarProng(tecla, especial)
+
+    def lanzarEspecial(self, camara, especial):
         mouse = pygame.mouse.get_pos()
         mouse_mundo = [mouse[0] + camara.x, mouse[1] + camara.y]
         centro = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
         dir = math.atan2(mouse_mundo[1] - centro[1], mouse_mundo[0] - centro[0])
-        self.esp.nuevoProyectil(dir, [centro[0] + math.cos(dir) * 40, centro[1] + math.sin(dir) * 40 ])
+        especial.nuevoProyectil(dir, [centro[0] + math.cos(dir) * 40, centro[1] + math.sin(dir) * 40 ])
 
     def ataquePrincipal(self, camara):
         mouse = pygame.mouse.get_pos()
@@ -96,7 +100,6 @@ class Player:
             self.boton_y = True
             self.colisiones(mapa_rect)
 
-
     def colisiones(self,mapa_rect):
 
         jugador_rect = pygame.Rect(self.x,self.y,self.tamano_x,self.tamano_y)
@@ -108,8 +111,7 @@ class Player:
                     if self.dx > 0:
                         self.x = pared.left - self.tamano_x
                     elif self.dx < 0:
-                        self.x = pared.right 
-        
+                        self.x = pared.right
 
         if self.boton_y == True:
             self.boton_y = False  
@@ -120,21 +122,26 @@ class Player:
                     elif self.dy < 0:
                         self.y = pared.bottom
 
+    def seguimiento_camara(self):
+        pass
+
 
         
     def update(self, dt,mapa,camara):
         self.tiempo += dt
         self.input(camara)
         self.movimiento(mapa.paredes)
-        self.esp.update(dt)
+        for prongs in self.prongs.especiales:
+            prongs.update(dt)
         center = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
         self.principal.update(dt, center)
     
     def dibujar(self,pantalla,camara):
         pygame.draw.rect(pantalla,"red",(self.x - camara.x,self.y - camara.y,self.tamano_x,self.tamano_y))
-        for x in self.esp.proyectiles:
-            pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
-            
+        for prong in self.prongs.especiales:
+            for x in prong.proyectiles:
+                pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
+
         for x in self.principal.hitbox:
             pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
             

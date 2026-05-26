@@ -31,9 +31,6 @@ class Mapa:
                     y = fila * self.size 
                     pared_rect = pygame.Rect(x,y,self.size,self.size)
                     self.paredes.append(pared_rect)
-                    
-                    
-
 
     def dibujar_mapa(self,pantalla,camara):
         

@@ -7,8 +7,14 @@ class Player:
     def __init__(self):
         self.x = 700
         self.y = 700
-        self.vida = 100
+        self.vida = 80
+        self.vida_max = 100
         self.mana = 100
+        self.exp = 20
+        self.exp_max = 100
+        self.nivel = 0
+        self.kills = 0
+        self.tiempo = 0
         self.dx = 0
         self.dy = 0
         self.tamano_x = 50
@@ -119,7 +125,10 @@ class Player:
     def seguimiento_camara(self):
         pass
 
+
+        
     def update(self, dt,mapa,camara):
+        self.tiempo += dt
         self.input(camara)
         self.movimiento(mapa.paredes)
         for prongs in self.prongs.especiales:
@@ -135,4 +144,10 @@ class Player:
 
         for x in self.principal.hitbox:
             pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
+            
+    def obtener_tiempo(self):
+        minutos = int(self.tiempo) // 60
+        segundos = int(self.tiempo) % 60
+        
+        return f"{minutos:02}:{segundos:02}"
                         

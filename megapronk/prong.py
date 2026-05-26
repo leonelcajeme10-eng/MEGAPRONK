@@ -2,23 +2,24 @@ import pygame
 import math 
 
 class Prongs:
-    def __init__(self):
-        self.especiales = [] 
+    def __init__(self, mapa):
+        self.prongs = [] 
+        self.mapa = mapa
 
-    def asignarProng(self, tecla, especial):
-        self.especiales.append(Especial(tecla, especial))
+    def asignarProng(self, tecla, prong, velocidad = 4):
+        self.prongs.append(Especial(tecla, prong, velocidad,  self.mapa))
     
-
 class Especial:
-    def __init__(self, tecla, especial):
+    def __init__(self, tecla, prong, velocidad, mapa):
         self.costo = 10
-        self.speed = 8
+        self.speed = velocidad
         self.damage = 10
         self.proyectiles = []
         self.cooldown_time = 0.5
         self.cooldown = 0.0
         self.tecla = tecla
-        self.tipoEspecial = especial
+        self.Prong = prong(velocidad, self, mapa)
+        self.mapa = mapa
 
     def puedeUsar(self):
         return self.cooldown <= 0.0
@@ -30,9 +31,7 @@ class Especial:
         if not self.puedeUsar():
             return False
         self.usar()
-        proyectil = self.tipoEspecial(dir, pos, self, 2)
-        self.proyectiles.append(proyectil)
-        print(len(self.proyectiles))
+        self.Prong.lanzarProyectil(dir, pos)
         return True
 
     def eliminarProyectil(self, proyectil):
@@ -48,6 +47,86 @@ class Especial:
             if self.cooldown < 0.0:
                 self.cooldown = 0.0
         self.updateProyectiles()
+
+class Proyectil:
+    def __init__(self, dir, pos, velocidad, esp, tiempo, dimensiones, mapa):
+        self.posicion = pos
+        self.dimension = dimensiones
+        self.dirreccion = dir
+        self.speed = velocidad
+        self.tiempoVida = tiempo
+        self.temporizador = pygame.time.get_ticks()
+        self.especial = esp
+        self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
+        self.mapa = mapa
+
+    def CalcularPos(self):
+        self.posicion[0] += math.cos(self.dirreccion) * self.speed
+        self.posicion[1] += math.sin(self.dirreccion) * self.speed
+
+    def update(self):
+        self.CalcularPos()
+        self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
+        if self.colisionParedes():
+            return
+
+        if pygame.time.get_ticks() - self.temporizador > self.tiempoVida * 1000:
+            self.especial.eliminarProyectil(self)
+
+    def colisionParedes(self):
+        for pared in self.mapa.paredes:
+                if self.rectangulo.colliderect(pared):
+                    self.especial.eliminarProyectil(self)
+                    return True
+        return False
+
+class ProyectilOscilante(Proyectil):
+    def __init__(self, dir, pos, velocidad, esp, tiempo, dimensiones, mapa, r = 1, amplitud=200, frecuencia=0.05):
+        super().__init__(dir, list(pos), velocidad, esp, tiempo, dimensiones,mapa)
+        
+        # 2. Creamos OTRA copia independiente para el eje base
+        self.base_pos = list(pos)
+        self.amplitud = amplitud    
+        self.frecuencia = frecuencia  
+        self.distancia_recorrida = 0
+        self.sentido = r
+
+    def CalcularPos(self):
+        self.distancia_recorrida += self.sentido
+        
+        self.base_pos[0] += math.cos(self.dirreccion) * self.speed
+        self.base_pos[1] += math.sin(self.dirreccion) * self.speed
+
+        perp_x = -math.sin(self.dirreccion)
+        perp_y = math.cos(self.dirreccion)
+
+        onda = math.sin(self.distancia_recorrida * self.frecuencia) * self.amplitud
+
+        self.posicion[0] = self.base_pos[0] + perp_x * onda
+        self.posicion[1] = self.base_pos[1] + perp_y * onda
+
+class Prong:
+    def __init__(self, velocidad, esp, mapa):
+        self.dimension = [80, 80]
+        self.speed = velocidad
+        self.tiempoVida = 5
+        self.especial = esp
+        self.mapa = mapa
+    
+    def lanzarProyectil(self, dir, pos):
+        proyectil = Proyectil(dir, pos, self.speed * 4, self.especial, 5, self.dimension, self.mapa)
+        self.especial.proyectiles.append(proyectil)
+
+class BolaFuego(Prong):
+    def __init__(self, velocidad, esp, mapa):
+        super().__init__(velocidad, esp, mapa)
+        self.dimension = [50, 50]
+
+    def lanzarProyectil(self, dir, pos):
+        proyectil = ProyectilOscilante(dir, pos, self.speed, self.especial, 5, self.dimension, self.mapa, 1)
+        self.especial.proyectiles.append(proyectil)
+        proyectil = ProyectilOscilante(dir, pos, self.speed, self.especial, 5, self.dimension, self.mapa, -1)
+        self.especial.proyectiles.append(proyectil)
 
 class Principal:
     def __init__(self):
@@ -98,28 +177,28 @@ class SetAtaque:
         self.principal = prin
 
     def mk_hitbox(self, dir, tamano, dims, shift_perp = 0, forward_offset=0):
-            coseno = math.cos(dir)
-            seno = math.sin(dir)
+        coseno = math.cos(dir)
+        seno = math.sin(dir)
 
-            d = dims
-            if abs(coseno) > abs(seno):
-                ancho, largo = dims
-            else:
-                largo, ancho = dims
+        d = dims
+        if abs(coseno) > abs(seno):
+            ancho, largo = dims
+        else:
+            largo, ancho = dims
 
-            b_dist = max(tamano[0], tamano[1]) / 2 + ancho / 2
+        b_dist = max(tamano[0], tamano[1]) / 2 + ancho / 2
 
-            fwd_x, fwd_y = coseno, seno
-            perp_x, perp_y = -seno, coseno
-            perp_len = math.hypot(perp_x, perp_y)
+        fwd_x, fwd_y = coseno, seno
+        perp_x, perp_y = -seno, coseno
+        perp_len = math.hypot(perp_x, perp_y)
             
-            if perp_len != 0:
-                perp_x /= perp_len
-                perp_y /= perp_len
+        if perp_len != 0:
+            perp_x /= perp_len
+            perp_y /= perp_len
 
-            expr = (lambda posicion, fx=fwd_x, fy=fwd_y, px=perp_x, py=perp_y, bd= b_dist, sp=shift_perp, fo=forward_offset:
-                    [posicion[0] + fx * (bd + fo) + px * sp, posicion[1] + fy * (bd + fo) + py * sp])
-            return expr
+        expr = (lambda posicion, fx=fwd_x, fy=fwd_y, px=perp_x, py=perp_y, bd= b_dist, sp=shift_perp, fo=forward_offset:
+                [posicion[0] + fx * (bd + fo) + px * sp, posicion[1] + fy * (bd + fo) + py * sp])
+        return expr
     
 class SetLigero(SetAtaque):
     def __init__(self, daño, prin):
@@ -202,51 +281,4 @@ class Hitbox():
             self.principal.eliminarHitbox(self)
     
     def operar(self, func, a):
-        return func(a)    
-
-class Proyectil:
-    def __init__(self, dir, pos, esp, tiempo):
-        self.posicion = pos
-        self.costo = 10
-        self.dimension = [10, 10]
-        self.dirreccion = dir
-        self.speed = 4
-        self.tiempoVida = tiempo
-        self.temporizador = pygame.time.get_ticks()
-        self.especial = esp
-        self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
-    
-
-    def CalcularPos(self):
-        self.posicion[0] += math.cos(self.dirreccion) * self.speed
-        self.posicion[1] += math.sin(self.dirreccion) * self.speed
-
-    def update(self):
-        self.CalcularPos()
-        self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
-        if pygame.time.get_ticks() - self.temporizador > self.tiempoVida * 1000:
-            self.especial.eliminarProyectil(self)
-
-class ProyectilOscilante(Proyectil):
-    def __init__(self, dir, pos, esp, tiempo, amplitud=200, frecuencia=0.05):
-        super().__init__(dir, list(pos), esp, tiempo)
-        
-        # 2. Creamos OTRA copia independiente para el eje base
-        self.base_pos = list(pos)
-        self.amplitud = amplitud    
-        self.frecuencia = frecuencia  
-        self.distancia_recorrida = 0  
-
-    def CalcularPos(self):
-        self.distancia_recorrida += 1
-        
-        self.base_pos[0] += math.cos(self.dirreccion) * self.speed
-        self.base_pos[1] += math.sin(self.dirreccion) * self.speed
-
-        perp_x = -math.sin(self.dirreccion)
-        perp_y = math.cos(self.dirreccion)
-
-        onda = math.sin(self.distancia_recorrida * self.frecuencia) * self.amplitud
-
-        self.posicion[0] = self.base_pos[0] + perp_x * onda
-        self.posicion[1] = self.base_pos[1] + perp_y * onda
+        return func(a)  

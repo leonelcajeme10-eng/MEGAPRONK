@@ -3,7 +3,7 @@ from player import Player
 from enemy import Enemy
 from mapa import Mapa
 from camara import Camara
-
+from prong import Proyectil, ProyectilOscilante
 pygame.init()
 
 
@@ -17,6 +17,9 @@ jugador = Player()
 enemigo = Enemy()
 mapa = Mapa()
 camara = Camara()
+
+jugador.agregarProng(pygame.K_1, Proyectil)
+jugador.agregarProng(pygame.K_2, ProyectilOscilante)
 
 ejecutando = True
 

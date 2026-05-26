@@ -1,14 +1,24 @@
 import pygame
 import math 
 
-class Especial:
+class Prongs:
     def __init__(self):
+        self.especiales = [] 
+
+    def asignarProng(self, tecla, especial):
+        self.especiales.append(Especial(tecla, especial))
+    
+
+class Especial:
+    def __init__(self, tecla, especial):
         self.costo = 10
         self.speed = 8
         self.damage = 10
         self.proyectiles = []
         self.cooldown_time = 0.5
         self.cooldown = 0.0
+        self.tecla = tecla
+        self.tipoEspecial = especial
 
     def puedeUsar(self):
         return self.cooldown <= 0.0
@@ -20,7 +30,7 @@ class Especial:
         if not self.puedeUsar():
             return False
         self.usar()
-        proyectil = ProyectilOscilante(dir, pos, self, 2)
+        proyectil = self.tipoEspecial(dir, pos, self, 2)
         self.proyectiles.append(proyectil)
         print(len(self.proyectiles))
         return True

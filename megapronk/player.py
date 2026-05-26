@@ -60,7 +60,6 @@ class Player:
         self.esp.nuevoProyectil(dir, [centro[0] + math.cos(dir) * 40, centro[1] + math.sin(dir) * 40 ])
 
     def ataquePrincipal(self, camara):
-        # usar la posición central del jugador para crear la hitbox
         mouse = pygame.mouse.get_pos()
         mouse_mundo = [mouse[0] + camara.x, mouse[1] + camara.y]
         centro = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
@@ -100,7 +99,6 @@ class Player:
 
         jugador_rect = pygame.Rect(self.x,self.y,self.tamano_x,self.tamano_y)
 
-
         if self.boton_x == True:
             self.boton_x = False
             for pared in mapa_rect:
@@ -120,9 +118,6 @@ class Player:
                     elif self.dy < 0:
                         self.y = pared.bottom
 
-    def seguimiento_camara(self):
-        pass
-
 
         
     def update(self, dt,mapa,camara):
@@ -135,7 +130,8 @@ class Player:
     def dibujar(self,pantalla,camara):
         pygame.draw.rect(pantalla,"red",(self.x - camara.x,self.y - camara.y,self.tamano_x,self.tamano_y))
         for x in self.esp.proyectiles:
-            pygame.draw.rect(pantalla,"blue",(x.posicion[0] - x.dimension[0] /2 - camara.x, x.posicion[1] - x.dimension[1] /2 - camara.y, x.dimension[0], x.dimension[1]))
-        
+            pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
+            
         for x in self.principal.hitbox:
-            pygame.draw.rect(pantalla,"blue",(x.posicion[0] - x.dimension[0] /2 - camara.x, x.posicion[1] - x.dimension[1] /2 - camara.y, x.dimension[0], x.dimension[1]))
+            pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
+                        

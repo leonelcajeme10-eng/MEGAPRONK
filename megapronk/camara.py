@@ -1,7 +1,5 @@
 import pygame
 
-
-
 class Camara:
     def __init__(self):
         self.x = 0

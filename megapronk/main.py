@@ -32,7 +32,7 @@ while ejecutando:
     dt = clock.tick(60) / 1000.0
 
     jugador.update(dt,mapa,camara)
-    enemigo.update(jugador,dt)
+    enemigo.update(jugador,dt,mapa)
     camara.update(jugador,dt)
 
     pantalla.fill((30, 30, 30))

@@ -7,8 +7,12 @@ class Player:
     def __init__(self):
         self.x = 700
         self.y = 700
-        self.vida = 100
+        self.vida = 80
+        self.vida_max = 100
         self.mana = 100
+        self.exp = 20
+        self.exp_max = 100
+        self.nivel = 0
         self.dx = 0
         self.dy = 0
         self.tamano_x = 50

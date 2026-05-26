@@ -3,9 +3,9 @@ from player import Player
 from enemy import Enemy
 from mapa import Mapa
 from camara import Camara
+from ui import UI
 
 pygame.init()
-
 
 pantalla = pygame.display.set_mode((1920,1080))
 
@@ -17,6 +17,7 @@ jugador = Player()
 enemigo = Enemy()
 mapa = Mapa()
 camara = Camara()
+ui = UI()
 
 ejecutando = True
 
@@ -39,6 +40,7 @@ while ejecutando:
     mapa.update(pantalla,camara)
     jugador.dibujar(pantalla,camara)
     enemigo.dibujar(pantalla,camara)
+    ui.dibujar_hud(pantalla, jugador)
     pygame.display.flip()
 
     

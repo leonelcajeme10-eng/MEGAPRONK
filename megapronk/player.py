@@ -13,6 +13,8 @@ class Player:
         self.exp = 20
         self.exp_max = 100
         self.nivel = 0
+        self.kills = 0
+        self.tiempo = 0
         self.dx = 0
         self.dy = 0
         self.tamano_x = 50
@@ -121,6 +123,7 @@ class Player:
 
         
     def update(self, dt,mapa,camara):
+        self.tiempo += dt
         self.input(camara)
         self.movimiento(mapa.paredes)
         self.esp.update(dt)
@@ -134,4 +137,10 @@ class Player:
             
         for x in self.principal.hitbox:
             pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
+            
+    def obtener_tiempo(self):
+        minutos = int(self.tiempo) // 60
+        segundos = int(self.tiempo) % 60
+        
+        return f"{minutos:02}:{segundos:02}"
                         

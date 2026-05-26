@@ -32,7 +32,7 @@ class Enemy:
             mov_x = self.dx * self.speed * dt
             mov_y = self.dy * self.speed * dt    
             
-            self.y += mov_y
+            
             
 
             if mov_x != 0:
@@ -41,7 +41,7 @@ class Enemy:
                 self.colisiones(mapa_rect)
 
             if mov_y != 0:
-                self.x += mov_x
+                self.y += mov_y
                 self.boton_y = True
                 self.colisiones(mapa_rect)
             

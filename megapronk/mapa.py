@@ -40,9 +40,6 @@ class Mapa:
         for paredes in self.paredes:
             pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(paredes))
 
-
-            
-
     def update(self,pantalla,camara):
         self.dibujar_mapa(pantalla,camara)
         

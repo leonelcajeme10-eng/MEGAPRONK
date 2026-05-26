@@ -4,7 +4,7 @@ from prong import Prongs, Principal
 from camara import Camara
 
 class Player:
-    def __init__(self):
+    def __init__(self, mapa):
         self.x = 700
         self.y = 700
         self.vida = 80
@@ -23,7 +23,7 @@ class Player:
         self.dt = 1
         self.boton_x = False
         self.boton_y = False
-        self.prongs = Prongs()
+        self.prong = Prongs(mapa)
         self.principal = Principal()
 
     def input(self,camara):
@@ -44,9 +44,7 @@ class Player:
         if keys[pygame.K_s]:
             self.dy = self.speed
 
-        print(len(self.prongs.especiales))
-
-        for prong in self.prongs.especiales:
+        for prong in self.prong.prongs:
             if keys[prong.tecla]:
                 self.lanzarEspecial(camara, prong)
 
@@ -56,7 +54,7 @@ class Player:
             self.ataquePrincipal(camara)
 
     def agregarProng(self, tecla, especial):
-        self.prongs.asignarProng(tecla, especial)
+        self.prong.asignarProng(tecla, especial)
 
     def lanzarEspecial(self, camara, especial):
         mouse = pygame.mouse.get_pos()
@@ -131,14 +129,14 @@ class Player:
         self.tiempo += dt
         self.input(camara)
         self.movimiento(mapa.paredes)
-        for prongs in self.prongs.especiales:
+        for prongs in self.prong.prongs:
             prongs.update(dt)
         center = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
         self.principal.update(dt, center)
     
     def dibujar(self,pantalla,camara):
         pygame.draw.rect(pantalla,"red",(self.x - camara.x,self.y - camara.y,self.tamano_x,self.tamano_y))
-        for prong in self.prongs.especiales:
+        for prong in self.prong.prongs:
             for x in prong.proyectiles:
                 pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
 

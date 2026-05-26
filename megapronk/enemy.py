@@ -9,6 +9,7 @@ class Enemy:
             self.y = 50
             self.dx = 0
             self.dy = 0
+            self.leo = 0
             self.speed = 75
             self.leoneo = "pedofilo"
         def movimiento(self,jugador,dt):

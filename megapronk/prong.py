@@ -7,7 +7,7 @@ class Especial:
         self.speed = 8
         self.damage = 10
         self.proyectiles = []
-        self.cooldown_time = 0.1
+        self.cooldown_time = 0.5
         self.cooldown = 0.0
 
     def puedeUsar(self):
@@ -19,10 +19,10 @@ class Especial:
     def nuevoProyectil(self, dir, pos):
         if not self.puedeUsar():
             return False
-
         self.usar()
-        proyectil = Proyectil(dir, pos, self, 2)
+        proyectil = ProyectilOscilante(dir, pos, self, 2)
         self.proyectiles.append(proyectil)
+        print(len(self.proyectiles))
         return True
 
     def eliminarProyectil(self, proyectil):
@@ -46,7 +46,7 @@ class Principal:
         self.damage = 10
         self.speed = 8
         self.proyectiles = []
-        self.cooldown_time = 0.2  # segundos entre usos
+        self.cooldown_time = 0.5  # segundos entre usos
         self.cooldown = 0.0
         self.set = SetLigero(self.damage, self)
         self.hitbox = [] # se almacena el rectangulo de la hitbox del ataque
@@ -114,7 +114,7 @@ class SetAtaque:
 class SetLigero(SetAtaque):
     def __init__(self, daño, prin):
         super().__init__(daño, prin)
-        self.intervalo = 0.4
+        self.intervalo = 1
         self.tiempo = 0.2
         self.damage = daño
 
@@ -203,7 +203,6 @@ class Proyectil:
         self.speed = 4
         self.tiempoVida = tiempo
         self.temporizador = pygame.time.get_ticks()
-        # apuntador a clase especial
         self.especial = esp
         self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
     
@@ -219,22 +218,25 @@ class Proyectil:
             self.especial.eliminarProyectil(self)
 
 class ProyectilOscilante(Proyectil):
-    def __init__(self, dir, pos, esp, tiempo, amplitud=30, frecuencia=0.03):
-        super().__init__(dir, pos, esp, tiempo)
-        self.base_pos = pos
+    def __init__(self, dir, pos, esp, tiempo, amplitud=200, frecuencia=0.05):
+        super().__init__(dir, list(pos), esp, tiempo)
+        
+        # 2. Creamos OTRA copia independiente para el eje base
+        self.base_pos = list(pos)
         self.amplitud = amplitud    
         self.frecuencia = frecuencia  
         self.distancia_recorrida = 0  
 
     def CalcularPos(self):
+        self.distancia_recorrida += 1
+        
         self.base_pos[0] += math.cos(self.dirreccion) * self.speed
         self.base_pos[1] += math.sin(self.dirreccion) * self.speed
 
         perp_x = -math.sin(self.dirreccion)
         perp_y = math.cos(self.dirreccion)
 
-        angulo_onda = (self.distancia_recorrida - self.speed) * self.frecuencia
-        onda = math.sin(angulo_onda) * self.amplitud
+        onda = math.sin(self.distancia_recorrida * self.frecuencia) * self.amplitud
 
         self.posicion[0] = self.base_pos[0] + perp_x * onda
         self.posicion[1] = self.base_pos[1] + perp_y * onda

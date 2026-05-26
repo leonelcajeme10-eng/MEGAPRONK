@@ -26,7 +26,6 @@ while ejecutando:
         print(evento)
         if evento.type == pygame.QUIT:
             ejecutando = False
-        
 
     dt = clock.tick(60) / 1000.0
 

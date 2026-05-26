@@ -37,16 +37,14 @@ class Player:
 
         if keys[pygame.K_s]:
             self.dy = self.speed
-        
+
         botones = pygame.mouse.get_pressed()
 
-        # Click derecho
-        if botones[2]:
-            self.lanzarEspecial(camara)
-        
-        # Click izquierdo para ataque principal
         if botones[0]:
             self.ataquePrincipal(camara)
+
+        if botones[2]:
+            self.lanzarEspecial(camara)
         
     def lanzarEspecial(self,camara):
         mouse = pygame.mouse.get_pos()
@@ -102,8 +100,7 @@ class Player:
                     if self.dx > 0:
                         self.x = pared.left - self.tamano_x
                     elif self.dx < 0:
-                        self.x = pared.right 
-        
+                        self.x = pared.right
 
         if self.boton_y == True:
             self.boton_y = False  
@@ -117,8 +114,6 @@ class Player:
     def seguimiento_camara(self):
         pass
 
-
-        
     def update(self, dt,mapa,camara):
         self.input(camara)
         self.movimiento(mapa.paredes)
@@ -130,7 +125,7 @@ class Player:
         pygame.draw.rect(pantalla,"red",(self.x - camara.x,self.y - camara.y,self.tamano_x,self.tamano_y))
         for x in self.esp.proyectiles:
             pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
-            
+
         for x in self.principal.hitbox:
             pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
                         

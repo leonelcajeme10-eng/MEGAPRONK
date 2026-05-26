@@ -31,17 +31,11 @@ class Mapa:
                     y = fila * self.size 
                     pared_rect = pygame.Rect(x,y,self.size,self.size)
                     self.paredes.append(pared_rect)
-                    
-                    
-
 
     def dibujar_mapa(self,pantalla,camara):
         
         for paredes in self.paredes:
             pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(paredes))
-
-
-            
 
     def update(self,pantalla,camara):
         self.dibujar_mapa(pantalla,camara)

@@ -3,7 +3,7 @@ from player import Player
 from enemy import Enemy
 from mapa import Mapa
 from camara import Camara
-from prong import Proyectil, ProyectilOscilante
+from prong import Prong, BolaFuego
 from ui import UI
 
 pygame.init()
@@ -14,14 +14,14 @@ clock = pygame.time.Clock()
 
 pygame.display.set_caption("Megapronk")
 
-jugador = Player()
-enemigo = Enemy()
 mapa = Mapa()
+jugador = Player(mapa)
+enemigo = Enemy()
 camara = Camara()
 ui = UI()
 
-jugador.agregarProng(pygame.K_1, Proyectil)
-jugador.agregarProng(pygame.K_2, ProyectilOscilante)
+jugador.agregarProng(pygame.K_1, Prong)
+jugador.agregarProng(pygame.K_2, BolaFuego)
 
 ejecutando = True
 

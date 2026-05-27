@@ -35,6 +35,10 @@ class UI:
         self.logo_kills = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "logo_kills.png"))
         self.logo_kills = pygame.transform.smoothscale(self.logo_kills, (72, 72))
+        
+        self.pronks_ui = pygame.image.load(
+        os.path.join(ruta_actual, "assets", "ui", "pronks_ui.png"))
+        self.pronks_ui = pygame.transform.smoothscale(self.pronks_ui, (370,185))
     
     def dibujar_hud(self, pantalla, jugador):
         self.dibujar_barra_vida(pantalla, jugador)
@@ -42,6 +46,7 @@ class UI:
         self.dibujar_lvl(pantalla, jugador)
         self.dibujar_kills(pantalla, jugador)
         self.dibujar_tiempo(pantalla, jugador)
+        self.dibujar_pronks(pantalla, jugador)
         
     def dibujar_barra_vida(self, pantalla, jugador):
         x = 220
@@ -113,5 +118,12 @@ class UI:
         tiempo = self.font2.render(f"{jugador.obtener_tiempo()}", True, (255,255,255))
         pantalla.blit(tiempo, (x-50, y))
         
+    def dibujar_pronks(self, pantalla, jugador):
+        x = 300
+        y = 750 
+        
+        pantalla.blit(self.pronks_ui, (x, y))
+         
+            
         
         

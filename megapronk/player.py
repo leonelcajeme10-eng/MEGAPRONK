@@ -17,14 +17,31 @@ class Player:
         self.tiempo = 0
         self.dx = 0
         self.dy = 0
-        self.tamano_x = 50
-        self.tamano_y = 50
+        self.tamano_x = 60
+        self.tamano_y = 80
         self.speed = 16
         self.dt = 1
         self.boton_x = False
         self.boton_y = False
-        self.prong = Prongs(mapa)
+        self.prongs = Prongs()
         self.principal = Principal()
+        
+        # Tamaño visual de cada frame del sprite sheet
+        self.sprite_ancho = 70
+        self.sprite_alto = 100
+        self.animaciones = self.cargar_animaciones()
+        # Animación
+        self.direccion = "down"
+        self.estado = "idle"
+        self.frame_actual = 0
+
+        # Milisegundos entre cada frame
+        #
+        self.velocidad_idle = 400
+        self.velocidad_walk = 120
+        self.ultimo_cambio_frame = pygame.time.get_ticks()
+
+        self.animaciones = self.cargar_animaciones()
 
     def input(self,camara):
         keys = pygame.key.get_pressed()
@@ -34,15 +51,25 @@ class Player:
 
         if keys[pygame.K_a]:
             self.dx = -self.speed
+            self.direccion = "left"
 
         if keys[pygame.K_d]:
             self.dx = self.speed
+            self.direccion = "right"
 
         if keys[pygame.K_w]:
             self.dy = -self.speed
-
+            self.direccion = "up"
+            
         if keys[pygame.K_s]:
             self.dy = self.speed
+            self.direccion = "down"
+            
+        if self.dx != 0 or self.dy != 0:
+            self.estado = "walk"
+        else:
+            self.estado = "idle"
+        print(len(self.prongs.especiales))
 
         for prong in self.prong.prongs:
             if keys[prong.tecla]:
@@ -54,7 +81,7 @@ class Player:
             self.ataquePrincipal(camara)
 
     def agregarProng(self, tecla, especial):
-        self.prong.asignarProng(tecla, especial)
+        self.prongs.asignarProng(tecla, especial)
 
     def lanzarEspecial(self, camara, especial):
         mouse = pygame.mouse.get_pos()
@@ -149,3 +176,55 @@ class Player:
         
         return f"{minutos:02}:{segundos:02}"
                         
+    def cargar_animaciones(self):
+        animaciones = {
+            "down": [],
+            "up": [],
+            "left": [],
+            "right": []
+        }
+
+        hoja = pygame.image.load("assets/images/player_spritesheet.png").convert_alpha()
+
+        frame_ancho = 70
+        frame_alto = 100
+
+        columnas = 5
+
+        # Orden de filas de tu sprite sheet
+        direcciones = ["down", "up", "left", "right"]
+
+        for fila, direccion in enumerate(direcciones):
+            for columna in range(columnas):
+                x = columna * frame_ancho
+                y = fila * frame_alto
+
+                frame = hoja.subsurface(
+                    pygame.Rect(
+                        x,
+                        y,
+                        frame_ancho,
+                        frame_alto
+                    )
+                ).copy()
+
+                animaciones[direccion].append(frame)
+
+        return animaciones
+    
+    def actualizar_animacion(self, dt):
+        tiempo_actual = pygame.time.get_ticks()
+
+        if self.estado == "idle":
+            velocidad_actual = self.velocidad_idle
+            total_frames = 2   # Solo usa frame 0 y 1
+        else:
+            velocidad_actual = self.velocidad_walk
+            total_frames = 5   # Usa frame 0, 1, 2, 3, 4
+
+        if tiempo_actual - self.ultimo_cambio_frame >= velocidad_actual:
+            self.ultimo_cambio_frame = tiempo_actual
+            self.frame_actual += 1
+
+            if self.frame_actual >= total_frames:
+                self.frame_actual = 0

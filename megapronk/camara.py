@@ -1,7 +1,5 @@
 import pygame
 
-
-
 class Camara:
     def __init__(self):
         self.x = 0
@@ -11,7 +9,7 @@ class Camara:
         self.suavizado = 8
 
     def update(self, jugador, dt):
-
+        
         objetivo_x = jugador.x + jugador.tamano_x / 2 - self.ancho / 2
         objetivo_y = jugador.y + jugador.tamano_y / 2 - self.alto / 2
 

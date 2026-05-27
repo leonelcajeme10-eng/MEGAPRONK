@@ -1,25 +1,48 @@
 import pygame
 import math
-from prong import Especial, Principal
+from prong import Prongs, Principal
 from camara import Camara
 
 class Player:
     def __init__(self):
         self.x = 700
         self.y = 700
-        self.vida = 100
+        self.vida = 80
+        self.vida_max = 100
         self.mana = 100
+        self.exp = 20
+        self.exp_max = 100
+        self.nivel = 0
+        self.kills = 0
+        self.tiempo = 0
         self.dx = 0
         self.dy = 0
-        self.tamano_x = 50
-        self.tamano_y = 50
+        self.tamano_x = 60
+        self.tamano_y = 80
         self.speed = 16
         self.dt = 1
-        self.boton_x =False
+        self.boton_x = False
         self.boton_y = False
-        self.esp = Especial()
+        self.prongs = Prongs()
         self.principal = Principal()
-    
+        
+        # Tamaño visual de cada frame del sprite sheet
+        self.sprite_ancho = 70
+        self.sprite_alto = 100
+        self.animaciones = self.cargar_animaciones()
+        # Animación
+        self.direccion = "down"
+        self.estado = "idle"
+        self.frame_actual = 0
+
+        # Milisegundos entre cada frame
+        #
+        self.velocidad_idle = 400
+        self.velocidad_walk = 120
+        self.ultimo_cambio_frame = pygame.time.get_ticks()
+
+        self.animaciones = self.cargar_animaciones()
+
     def input(self,camara):
         keys = pygame.key.get_pressed()
 
@@ -28,35 +51,46 @@ class Player:
 
         if keys[pygame.K_a]:
             self.dx = -self.speed
+            self.direccion = "left"
 
         if keys[pygame.K_d]:
             self.dx = self.speed
+            self.direccion = "right"
 
         if keys[pygame.K_w]:
             self.dy = -self.speed
-
+            self.direccion = "up"
+            
         if keys[pygame.K_s]:
             self.dy = self.speed
-        
+            self.direccion = "down"
+            
+        if self.dx != 0 or self.dy != 0:
+            self.estado = "walk"
+        else:
+            self.estado = "idle"
+        print(len(self.prongs.especiales))
+
+        for prong in self.prongs.especiales:
+            if keys[prong.tecla]:
+                self.lanzarEspecial(camara, prong)
+
         botones = pygame.mouse.get_pressed()
 
-        # Click derecho
-        if botones[2]:
-            self.lanzarEspecial(camara)
-        
-        # Click izquierdo para ataque principal
         if botones[0]:
             self.ataquePrincipal(camara)
-        
-    def lanzarEspecial(self,camara):
+
+    def agregarProng(self, tecla, especial):
+        self.prongs.asignarProng(tecla, especial)
+
+    def lanzarEspecial(self, camara, especial):
         mouse = pygame.mouse.get_pos()
         mouse_mundo = [mouse[0] + camara.x, mouse[1] + camara.y]
         centro = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
         dir = math.atan2(mouse_mundo[1] - centro[1], mouse_mundo[0] - centro[0])
-        self.esp.nuevoProyectil(dir, [centro[0] + math.cos(dir) * 40, centro[1] + math.sin(dir) * 40 ])
+        especial.nuevoProyectil(dir, [centro[0] + math.cos(dir) * 40, centro[1] + math.sin(dir) * 40 ])
 
     def ataquePrincipal(self, camara):
-        # usar la posición central del jugador para crear la hitbox
         mouse = pygame.mouse.get_pos()
         mouse_mundo = [mouse[0] + camara.x, mouse[1] + camara.y]
         centro = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
@@ -91,11 +125,9 @@ class Player:
             self.boton_y = True
             self.colisiones(mapa_rect)
 
-
     def colisiones(self,mapa_rect):
 
         jugador_rect = pygame.Rect(self.x,self.y,self.tamano_x,self.tamano_y)
-
 
         if self.boton_x == True:
             self.boton_x = False
@@ -104,8 +136,7 @@ class Player:
                     if self.dx > 0:
                         self.x = pared.left - self.tamano_x
                     elif self.dx < 0:
-                        self.x = pared.right 
-        
+                        self.x = pared.right
 
         if self.boton_y == True:
             self.boton_y = False  
@@ -122,16 +153,94 @@ class Player:
 
         
     def update(self, dt,mapa,camara):
+        self.tiempo += dt
         self.input(camara)
         self.movimiento(mapa.paredes)
-        self.esp.update(dt)
+        
+        # Actualizar animación
+        self.actualizar_animacion(dt)
+        
+        for prongs in self.prongs.especiales:
+            prongs.update(dt)
         center = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
         self.principal.update(dt, center)
     
     def dibujar(self,pantalla,camara):
-        pygame.draw.rect(pantalla,"red",(self.x - camara.x,self.y - camara.y,self.tamano_x,self.tamano_y))
-        for x in self.esp.proyectiles:
-            pygame.draw.rect(pantalla,"blue",(x.posicion[0] - x.dimension[0] /2 - camara.x, x.posicion[1] - x.dimension[1] /2 - camara.y, x.dimension[0], x.dimension[1]))
+        frame = self.animaciones[self.direccion][self.frame_actual]
+
+        draw_x = self.x - camara.x
+        draw_y = self.y - camara.y - 20
+
+        pantalla.blit(
+            frame,
+            (
+                int(draw_x),
+                int(draw_y)
+            )
+        )
         
+        for prong in self.prongs.especiales:
+            for x in prong.proyectiles:
+                pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
+
         for x in self.principal.hitbox:
-            pygame.draw.rect(pantalla,"blue",(x.posicion[0] - x.dimension[0] /2 - camara.x, x.posicion[1] - x.dimension[1] /2 - camara.y, x.dimension[0], x.dimension[1]))
+            pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
+            
+    def obtener_tiempo(self):
+        minutos = int(self.tiempo) // 60
+        segundos = int(self.tiempo) % 60
+        
+        return f"{minutos:02}:{segundos:02}"
+                        
+    def cargar_animaciones(self):
+        animaciones = {
+            "down": [],
+            "up": [],
+            "left": [],
+            "right": []
+        }
+
+        hoja = pygame.image.load("assets/images/player_spritesheet.png").convert_alpha()
+
+        frame_ancho = 70
+        frame_alto = 100
+
+        columnas = 5
+
+        # Orden de filas de tu sprite sheet
+        direcciones = ["down", "up", "left", "right"]
+
+        for fila, direccion in enumerate(direcciones):
+            for columna in range(columnas):
+                x = columna * frame_ancho
+                y = fila * frame_alto
+
+                frame = hoja.subsurface(
+                    pygame.Rect(
+                        x,
+                        y,
+                        frame_ancho,
+                        frame_alto
+                    )
+                ).copy()
+
+                animaciones[direccion].append(frame)
+
+        return animaciones
+    
+    def actualizar_animacion(self, dt):
+        tiempo_actual = pygame.time.get_ticks()
+
+        if self.estado == "idle":
+            velocidad_actual = self.velocidad_idle
+            total_frames = 2   # Solo usa frame 0 y 1
+        else:
+            velocidad_actual = self.velocidad_walk
+            total_frames = 5   # Usa frame 0, 1, 2, 3, 4
+
+        if tiempo_actual - self.ultimo_cambio_frame >= velocidad_actual:
+            self.ultimo_cambio_frame = tiempo_actual
+            self.frame_actual += 1
+
+            if self.frame_actual >= total_frames:
+                self.frame_actual = 0

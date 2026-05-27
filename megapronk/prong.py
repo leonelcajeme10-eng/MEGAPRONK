@@ -1,14 +1,24 @@
 import pygame
 import math 
 
-class Especial:
+class Prongs:
     def __init__(self):
+        self.especiales = [] 
+
+    def asignarProng(self, tecla, especial):
+        self.especiales.append(Especial(tecla, especial))
+    
+
+class Especial:
+    def __init__(self, tecla, especial):
         self.costo = 10
         self.speed = 8
         self.damage = 10
         self.proyectiles = []
-        self.cooldown_time = 0.1
+        self.cooldown_time = 0.5
         self.cooldown = 0.0
+        self.tecla = tecla
+        self.tipoEspecial = especial
 
     def puedeUsar(self):
         return self.cooldown <= 0.0
@@ -19,10 +29,10 @@ class Especial:
     def nuevoProyectil(self, dir, pos):
         if not self.puedeUsar():
             return False
-
         self.usar()
-        proyectil = Proyectil(dir, pos, self, 2)
+        proyectil = self.tipoEspecial(dir, pos, self, 2)
         self.proyectiles.append(proyectil)
+        print(len(self.proyectiles))
         return True
 
     def eliminarProyectil(self, proyectil):
@@ -46,7 +56,7 @@ class Principal:
         self.damage = 10
         self.speed = 8
         self.proyectiles = []
-        self.cooldown_time = 0.2  # segundos entre usos
+        self.cooldown_time = 0.5  # segundos entre usos
         self.cooldown = 0.0
         self.set = SetLigero(self.damage, self)
         self.hitbox = [] # se almacena el rectangulo de la hitbox del ataque
@@ -87,67 +97,86 @@ class SetAtaque:
         self.ultimoAtaque = 0
         self.principal = prin
 
+    def mk_hitbox(self, dir, tamano, dims, shift_perp = 0, forward_offset=0):
+            coseno = math.cos(dir)
+            seno = math.sin(dir)
+
+            d = dims
+            if abs(coseno) > abs(seno):
+                ancho, largo = dims
+            else:
+                largo, ancho = dims
+
+            b_dist = max(tamano[0], tamano[1]) / 2 + ancho / 2
+
+            fwd_x, fwd_y = coseno, seno
+            perp_x, perp_y = -seno, coseno
+            perp_len = math.hypot(perp_x, perp_y)
+            
+            if perp_len != 0:
+                perp_x /= perp_len
+                perp_y /= perp_len
+
+            expr = (lambda posicion, fx=fwd_x, fy=fwd_y, px=perp_x, py=perp_y, bd= b_dist, sp=shift_perp, fo=forward_offset:
+                    [posicion[0] + fx * (bd + fo) + px * sp, posicion[1] + fy * (bd + fo) + py * sp])
+            return expr
+    
 class SetLigero(SetAtaque):
     def __init__(self, daño, prin):
         super().__init__(daño, prin)
-        self.intervalo = 0.4
-        
+        self.intervalo = 1
+        self.tiempo = 0.2
+        self.damage = daño
+
     def atacar(self, pos, dir, tamano):
         if pygame.time.get_ticks() - self.ultimoAtaque > self.intervalo * 1000:
             self.actAtaque = 0
+
         coseno = math.cos(dir)
         seno = math.sin(dir)
 
-        fwd_x, fwd_y = coseno, seno
-        perp_x, perp_y = -seno, coseno
-        perp_len = math.hypot(perp_x, perp_y)
-        if perp_len != 0:
-            perp_x /= perp_len
-            perp_y /= perp_len
-
-        largo = 80
-        corto = 40
+        largo = 200
+        corto = 120
 
         if abs(coseno) > abs(seno):
-            dimensiones = [corto, largo]
+            dimensiones = (corto, largo)
         else:
-            dimensiones = [largo, corto]
-
-        base_dist = max(tamano[0], tamano[1]) / 2 + 20
-
-        def mk_hitbox(shift_perp, dims=None, tiempo=0.2, forward_offset=0):
-            d = dims if dims is not None else dimensiones
-            expr = (lambda posicion, fx=fwd_x, fy=fwd_y, px=perp_x, py=perp_y, bd=base_dist, sp=shift_perp, fo=forward_offset:
-                    [posicion[0] + fx * (bd + fo) + px * sp, posicion[1] + fy * (bd + fo) + py * sp])
-            return Hitbox(expr, pos, d, tiempo, self.principal)
+            dimensiones = (largo, corto)
 
         match self.actAtaque:
             case 0:
-                # desplazado 30px a la izquierda (desde el punto de vista del ataque)
-                hitbox = mk_hitbox(-30)
+                expr = self.mk_hitbox(dir, tamano, dimensiones, largo / 4)  
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
+
             case 1:
-                hitbox = mk_hitbox(30)
+                expr = self.mk_hitbox(dir, tamano, dimensiones, - largo / 4)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
+
             case 2:
-                # otra vez a la izquierda
-                hitbox = mk_hitbox(-30)
+                expr = self.mk_hitbox(dir, tamano, dimensiones, largo / 4)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
+
             case 3:
-                # desplazado a la derecha
-                hitbox = mk_hitbox(30)
+                expr = self.mk_hitbox(dir, tamano, dimensiones, - largo / 4)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
+
             case 4:
-                # final con mayor dimensión perpendicular
                 if abs(coseno) > abs(seno):
-                    final_dims = [corto + 80, largo + 30]
+                    final_dims = [corto + corto, largo + largo / 4]
                 else:
-                    final_dims = [largo + 30, corto + 80]
-                hitbox = mk_hitbox(0, final_dims, 0.2, 40)
+                    final_dims = [largo + largo / 4, corto + corto]
+
+                expr = self.mk_hitbox(dir, tamano, final_dims)
+                hitbox = Hitbox(expr, pos, final_dims, self.tiempo, self.principal)
+
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque = 0
             case _:
@@ -163,17 +192,17 @@ class Hitbox():
         self.tiempoVida = tiempo
         self.temporizador = pygame.time.get_ticks()
         self.principal = prin
-
+        self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
+    
     def update(self, pos):
-        # si ha pasado el tiempo de vida, eliminar la hitbox
         self.posicion = self.operar(self.expresion, pos)
-
+        self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
+    
         if pygame.time.get_ticks() - self.temporizador > self.tiempoVida * 1000:
             self.principal.eliminarHitbox(self)
     
     def operar(self, func, a):
-        return func(a)
-        
+        return func(a)    
 
 class Proyectil:
     def __init__(self, dir, pos, esp, tiempo):
@@ -181,14 +210,43 @@ class Proyectil:
         self.costo = 10
         self.dimension = [10, 10]
         self.dirreccion = dir
-        self.speed = 20
+        self.speed = 4
         self.tiempoVida = tiempo
         self.temporizador = pygame.time.get_ticks()
-        # apuntador a clase especial
         self.especial = esp
+        self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
+    
 
-    def update(self):
+    def CalcularPos(self):
         self.posicion[0] += math.cos(self.dirreccion) * self.speed
         self.posicion[1] += math.sin(self.dirreccion) * self.speed
+
+    def update(self):
+        self.CalcularPos()
+        self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
         if pygame.time.get_ticks() - self.temporizador > self.tiempoVida * 1000:
             self.especial.eliminarProyectil(self)
+
+class ProyectilOscilante(Proyectil):
+    def __init__(self, dir, pos, esp, tiempo, amplitud=200, frecuencia=0.05):
+        super().__init__(dir, list(pos), esp, tiempo)
+        
+        # 2. Creamos OTRA copia independiente para el eje base
+        self.base_pos = list(pos)
+        self.amplitud = amplitud    
+        self.frecuencia = frecuencia  
+        self.distancia_recorrida = 0  
+
+    def CalcularPos(self):
+        self.distancia_recorrida += 1
+        
+        self.base_pos[0] += math.cos(self.dirreccion) * self.speed
+        self.base_pos[1] += math.sin(self.dirreccion) * self.speed
+
+        perp_x = -math.sin(self.dirreccion)
+        perp_y = math.cos(self.dirreccion)
+
+        onda = math.sin(self.distancia_recorrida * self.frecuencia) * self.amplitud
+
+        self.posicion[0] = self.base_pos[0] + perp_x * onda
+        self.posicion[1] = self.base_pos[1] + perp_y * onda

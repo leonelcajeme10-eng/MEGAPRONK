@@ -1,5 +1,7 @@
 import pygame
 import math 
+import os
+ruta_actual = os.path.dirname(__file__)
 
 class Prongs:
     def __init__(self, mapa):
@@ -112,6 +114,9 @@ class Prong:
         self.tiempoVida = 5
         self.especial = esp
         self.mapa = mapa
+        self.icono = pygame.image.load(
+        os.path.join(ruta_actual, "assets", "ui", "disparo_pronk.png"))
+        self.icono = pygame.transform.smoothscale(self.icono, (85, 85))
     
     def lanzarProyectil(self, dir, pos):
         proyectil = Proyectil(dir, pos, self.speed * 4, self.especial, 5, self.dimension, self.mapa)
@@ -121,6 +126,9 @@ class BolaFuego(Prong):
     def __init__(self, velocidad, esp, mapa):
         super().__init__(velocidad, esp, mapa)
         self.dimension = [50, 50]
+        self.icono = pygame.image.load(
+        os.path.join(ruta_actual, "assets", "ui", "bolafuego_pronk.png"))
+        self.icono = pygame.transform.smoothscale(self.icono, (90, 90))
 
     def lanzarProyectil(self, dir, pos):
         proyectil = ProyectilOscilante(dir, pos, self.speed, self.especial, 5, self.dimension, self.mapa, 1)

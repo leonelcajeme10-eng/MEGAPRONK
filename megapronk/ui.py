@@ -1,5 +1,6 @@
 import pygame
 import os 
+from prong import Prong, BolaFuego
 ruta_actual = os.path.dirname(__file__)
 
 class UI:
@@ -39,6 +40,14 @@ class UI:
         self.pronks_ui = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "pronks_ui.png"))
         self.pronks_ui = pygame.transform.smoothscale(self.pronks_ui, (370,185))
+        
+        self.disparo_pronk = pygame.image.load(
+        os.path.join(ruta_actual, "assets", "ui", "disparo_pronk.png"))
+        self.disparo_pronk = pygame.transform.smoothscale(self.disparo_pronk, (80,80))
+        
+        self.bolafuego_pronk = pygame.image.load(
+        os.path.join(ruta_actual, "assets", "ui", "bolafuego_pronk.png"))
+        self.bolafuego_pronk = pygame.transform.smoothscale(self.bolafuego_pronk, (80,80))
     
     def dibujar_hud(self, pantalla, jugador):
         self.dibujar_barra_vida(pantalla, jugador)
@@ -122,7 +131,43 @@ class UI:
         x = 300
         y = 750 
         
+        
         pantalla.blit(self.pronks_ui, (x, y))
-         
+        
+        for i, prong in enumerate(jugador.prong.prongs):
+            slot_x = x + 8 + i * 125
+            slot_y = y + 38
+
+            slot_ancho = 100
+            slot_alto = 100
+
+            icono = prong.Prong.icono
+
+            offset_x = 0
+            offset_y = 0
+
+            if isinstance(prong.Prong, BolaFuego) and (i == 0 or i == 1):
+                offset_x = +6
+                offset_y = 2    
+
+            icono_rect = icono.get_rect(
+            center=(slot_x + slot_ancho // 2 + offset_x,
+            slot_y + slot_alto // 2 + offset_y)
+            )
+
+            pantalla.blit(icono, icono_rect)
+            
+            if prong.cooldown > 0:
+                porcentaje_cooldown = prong.cooldown / prong.cooldown_time
+                alto_cd = slot_alto * porcentaje_cooldown
+
+                overlay = pygame.Surface((slot_ancho, alto_cd), pygame.SRCALPHA)
+                overlay.fill((0, 0, 0, 150))
+
+                if i == 0:
+                    pantalla.blit(overlay, (slot_x+9, slot_y + slot_alto - alto_cd))
+                else:
+                    pantalla.blit(overlay, (slot_x, slot_y + slot_alto - alto_cd))
+
             
         

@@ -23,7 +23,7 @@ class Player:
         self.dt = 1
         self.boton_x = False
         self.boton_y = False
-        self.prong = Prongs()
+        self.prong = Prongs(mapa)
         self.principal = Principal()
         
         # Tamaño visual de cada frame del sprite sheet
@@ -36,7 +36,6 @@ class Player:
         self.frame_actual = 0
 
         # Milisegundos entre cada frame
-        #
         self.velocidad_idle = 400
         self.velocidad_walk = 120
         self.ultimo_cambio_frame = pygame.time.get_ticks()
@@ -70,7 +69,7 @@ class Player:
             self.estado = "walk"
         else:
             self.estado = "idle"
-        print(len(self.prongs.especiales))
+        # print(len(self.prongs.especiales))
 
         for prong in self.prong.prongs:
             if keys[prong.tecla]:
@@ -180,7 +179,7 @@ class Player:
             )
         )
         
-        for prong in self.prongs.especiales:
+        for prong in self.prong.prongs:
             for x in prong.proyectiles:
                 pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
 

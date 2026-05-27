@@ -20,8 +20,9 @@ enemigo = Enemy()
 camara = Camara()
 ui = UI()
 
-jugador.agregarProng(pygame.K_1, Prong)
-jugador.agregarProng(pygame.K_2, BolaFuego)
+jugador.agregarProng(pygame.K_1, BolaFuego)
+jugador.agregarProng(pygame.K_2, Prong)
+jugador.agregarProng(pygame.K_3, Prong)
 
 ejecutando = True
 

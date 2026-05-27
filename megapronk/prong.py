@@ -2,15 +2,15 @@ import pygame
 import math 
 
 class Prongs:
-    def __init__(self, mapa):
-        self.prongs = [] 
-        self.mapa = mapa
+    def __init__(self):
+        self.especiales = [] 
 
-    def asignarProng(self, tecla, prong, velocidad = 4):
-        self.prongs.append(Especial(tecla, prong, velocidad,  self.mapa))
+    def asignarProng(self, tecla, especial):
+        self.especiales.append(Especial(tecla, especial))
     
+
 class Especial:
-    def __init__(self, tecla, prong, velocidad, mapa):
+    def __init__(self, tecla, especial):
         self.costo = 10
         self.speed = velocidad
         self.damage = 10
@@ -18,8 +18,7 @@ class Especial:
         self.cooldown_time = 0.5
         self.cooldown = 0.0
         self.tecla = tecla
-        self.Prong = prong(velocidad, self, mapa)
-        self.mapa = mapa
+        self.tipoEspecial = especial
 
     def puedeUsar(self):
         return self.cooldown <= 0.0
@@ -31,7 +30,9 @@ class Especial:
         if not self.puedeUsar():
             return False
         self.usar()
-        self.Prong.lanzarProyectil(dir, pos)
+        proyectil = self.tipoEspecial(dir, pos, self, 2)
+        self.proyectiles.append(proyectil)
+        print(len(self.proyectiles))
         return True
 
     def eliminarProyectil(self, proyectil):
@@ -177,28 +178,28 @@ class SetAtaque:
         self.principal = prin
 
     def mk_hitbox(self, dir, tamano, dims, shift_perp = 0, forward_offset=0):
-        coseno = math.cos(dir)
-        seno = math.sin(dir)
+            coseno = math.cos(dir)
+            seno = math.sin(dir)
 
-        d = dims
-        if abs(coseno) > abs(seno):
-            ancho, largo = dims
-        else:
-            largo, ancho = dims
+            d = dims
+            if abs(coseno) > abs(seno):
+                ancho, largo = dims
+            else:
+                largo, ancho = dims
 
-        b_dist = max(tamano[0], tamano[1]) / 2 + ancho / 2
+            b_dist = max(tamano[0], tamano[1]) / 2 + ancho / 2
 
-        fwd_x, fwd_y = coseno, seno
-        perp_x, perp_y = -seno, coseno
-        perp_len = math.hypot(perp_x, perp_y)
+            fwd_x, fwd_y = coseno, seno
+            perp_x, perp_y = -seno, coseno
+            perp_len = math.hypot(perp_x, perp_y)
             
-        if perp_len != 0:
-            perp_x /= perp_len
-            perp_y /= perp_len
+            if perp_len != 0:
+                perp_x /= perp_len
+                perp_y /= perp_len
 
-        expr = (lambda posicion, fx=fwd_x, fy=fwd_y, px=perp_x, py=perp_y, bd= b_dist, sp=shift_perp, fo=forward_offset:
-                [posicion[0] + fx * (bd + fo) + px * sp, posicion[1] + fy * (bd + fo) + py * sp])
-        return expr
+            expr = (lambda posicion, fx=fwd_x, fy=fwd_y, px=perp_x, py=perp_y, bd= b_dist, sp=shift_perp, fo=forward_offset:
+                    [posicion[0] + fx * (bd + fo) + px * sp, posicion[1] + fy * (bd + fo) + py * sp])
+            return expr
     
 class SetLigero(SetAtaque):
     def __init__(self, daño, prin):
@@ -281,4 +282,51 @@ class Hitbox():
             self.principal.eliminarHitbox(self)
     
     def operar(self, func, a):
-        return func(a)  
+        return func(a)    
+
+class Proyectil:
+    def __init__(self, dir, pos, esp, tiempo):
+        self.posicion = pos
+        self.costo = 10
+        self.dimension = [10, 10]
+        self.dirreccion = dir
+        self.speed = 4
+        self.tiempoVida = tiempo
+        self.temporizador = pygame.time.get_ticks()
+        self.especial = esp
+        self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
+    
+
+    def CalcularPos(self):
+        self.posicion[0] += math.cos(self.dirreccion) * self.speed
+        self.posicion[1] += math.sin(self.dirreccion) * self.speed
+
+    def update(self):
+        self.CalcularPos()
+        self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
+        if pygame.time.get_ticks() - self.temporizador > self.tiempoVida * 1000:
+            self.especial.eliminarProyectil(self)
+
+class ProyectilOscilante(Proyectil):
+    def __init__(self, dir, pos, esp, tiempo, amplitud=200, frecuencia=0.05):
+        super().__init__(dir, list(pos), esp, tiempo)
+        
+        # 2. Creamos OTRA copia independiente para el eje base
+        self.base_pos = list(pos)
+        self.amplitud = amplitud    
+        self.frecuencia = frecuencia  
+        self.distancia_recorrida = 0  
+
+    def CalcularPos(self):
+        self.distancia_recorrida += 1
+        
+        self.base_pos[0] += math.cos(self.dirreccion) * self.speed
+        self.base_pos[1] += math.sin(self.dirreccion) * self.speed
+
+        perp_x = -math.sin(self.dirreccion)
+        perp_y = math.cos(self.dirreccion)
+
+        onda = math.sin(self.distancia_recorrida * self.frecuencia) * self.amplitud
+
+        self.posicion[0] = self.base_pos[0] + perp_x * onda
+        self.posicion[1] = self.base_pos[1] + perp_y * onda

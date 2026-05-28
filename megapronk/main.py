@@ -21,11 +21,7 @@ camara = Camara()
 ui = UI()
 
 tiempo_spawn = 0
-
 enemigos = []
-
-
-
 pause = PauseMenu(1920, 1080)
 
 jugador.agregarProng(pygame.K_1, BolaFuego)
@@ -45,34 +41,44 @@ while ejecutando:
             ejecutando = False
 
     dt = clock.tick(60) / 1000.0
+    
+    pause.actualizar(dt)
+
+    if pause.pausado:
+        pantalla.fill((255, 255, 255))
+        mapa.update(pantalla, camara)
+        jugador.dibujar(pantalla, camara)
+
+        for enemigo in enemigos:
+            enemigo.dibujar(pantalla, camara)
+
+        ui.dibujar_hud(pantalla, jugador)
+        pause.dibujar(pantalla)
+
+        pygame.display.flip()
+        continue
+
 
     tiempo_spawn += dt
     if tiempo_spawn >= 1:
         enemigos.append(Enemy(camara))
         tiempo_spawn = 0
 
-        
-    jugador.update(dt,mapa,camara)
-    camara.update(jugador,dt)
-    
-    
+    jugador.update(dt, mapa, camara)
+    camara.update(jugador, dt, mapa)
 
     pantalla.fill((255, 255, 255))
-
-    mapa.update(pantalla,camara)
-    jugador.dibujar(pantalla,camara)
+    mapa.update(pantalla, camara)
+    jugador.dibujar(pantalla, camara)
 
     for enemigo in enemigos:
-        
-        enemigo.update(jugador,dt,mapa,camara)
-        enemigo.dibujar(pantalla,camara)
-            
-
+        enemigo.update(jugador, dt, mapa, camara)
+        enemigo.dibujar(pantalla, camara)
 
     ui.dibujar_hud(pantalla, jugador)
     pause.dibujar(pantalla)
-    pygame.display.flip()
 
+    pygame.display.flip()
     
 
 pygame.quit()

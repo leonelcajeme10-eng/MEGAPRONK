@@ -68,12 +68,7 @@ class PauseMenu:
 
     def dibujar_particulas(self, pantalla):
         for x, y, radio, velocidad in self.particulas:
-            pygame.draw.circle(
-                pantalla,
-                (212, 175, 55),
-                (int(x), int(y)),
-                radio
-            )
+            pygame.draw.circle(pantalla,(212, 175, 55), (int(x), int(y)), radio)
 
     def dibujar_boton(self, pantalla, rect, texto):
         mouse = pygame.mouse.get_pos()
@@ -86,13 +81,7 @@ class PauseMenu:
         pygame.draw.rect(pantalla, color_borde, rect, width=4, border_radius=12)
 
         render = self.font_boton.render(texto, True, (255, 240, 200))
-        pantalla.blit(
-            render,
-            (
-                rect.centerx - render.get_width() // 2,
-                rect.centery - render.get_height() // 2
-            )
-        )
+        pantalla.blit(render, (rect.centerx - render.get_width() // 2, rect.centery - render.get_height() // 2))
 
     def dibujar(self, pantalla):
         if not self.pausado:
@@ -115,13 +104,7 @@ class PauseMenu:
         pantalla.blit(self.borde_menu, (borde_x, borde_y))
 
         titulo = self.font_titulo.render("PAUSA", True, (212, 175, 55))
-        pantalla.blit(
-        titulo,
-        (
-            menu.centerx - titulo.get_width() // 2,
-            menu.y + 45
-        )
-        )
+        pantalla.blit(titulo, (menu.centerx - titulo.get_width() // 2,menu.y + 45))
 
         self.dibujar_boton(pantalla, self.botones["continuar"], "CONTINUAR")
         self.dibujar_boton(pantalla, self.botones["salir"], "SALIR")

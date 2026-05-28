@@ -16,9 +16,15 @@ pygame.display.set_caption("Megapronk")
 
 mapa = Mapa()
 jugador = Player(mapa)
-enemigo = Enemy()
 camara = Camara()
 ui = UI()
+
+tiempo_spawn = 0
+
+enemigos = []
+
+
+
 
 jugador.agregarProng(pygame.K_1, BolaFuego)
 jugador.agregarProng(pygame.K_2, Prong)
@@ -35,15 +41,29 @@ while ejecutando:
 
     dt = clock.tick(60) / 1000.0
 
+    tiempo_spawn += dt
+    if tiempo_spawn >= 1:
+        enemigos.append(Enemy(camara))
+        tiempo_spawn = 0
+
+        
     jugador.update(dt,mapa,camara)
-    enemigo.update(jugador,dt,mapa)
     camara.update(jugador,dt)
+    
+    
 
     pantalla.fill((30, 30, 30))
 
     mapa.update(pantalla,camara)
     jugador.dibujar(pantalla,camara)
-    enemigo.dibujar(pantalla,camara)
+
+    for enemigo in enemigos:
+        
+        enemigo.update(jugador,dt,mapa,camara)
+        enemigo.dibujar(pantalla,camara)
+            
+
+
     ui.dibujar_hud(pantalla, jugador)
     pygame.display.flip()
 

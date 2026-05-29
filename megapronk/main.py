@@ -72,7 +72,7 @@ while ejecutando:
     jugador.dibujar(pantalla, camara)
 
     for enemigo in enemigos:
-        enemigo.update(jugador, dt, mapa, camara)
+        enemigo.update(jugador, dt, mapa, camara,enemigos)
         enemigo.dibujar(pantalla, camara)
 
     ui.dibujar_hud(pantalla, jugador)

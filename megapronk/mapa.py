@@ -47,8 +47,8 @@ class Mapa:
         self.suelo_base = pygame.transform.scale(self.suelo_base, (256, 256))
         self.suelo_final = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "suelo_final.png")).convert()
         self.suelo_final = pygame.transform.scale(self.suelo_final, (256, 256))
-        self.suelo_desgaste = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "suelo_desgaste.jpg")).convert()
-        self.suelo_desgaste = pygame.transform.scale(self.suelo_desgaste, (256, 256))
+        self.suelo_sangre = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "suelo_sangre.png")).convert()
+        self.suelo_sangre = pygame.transform.scale(self.suelo_sangre, (256, 256))
         self.ancho_mundo = len(self.mapa[0]) * self.size
         self.alto_mundo = len(self.mapa) * self.size
         self.tiles = []
@@ -56,8 +56,8 @@ class Mapa:
         for fila in range(len(self.mapa)):
             fila_tiles = []
             for columna in range(len(self.mapa[fila])):
-                if random.randint(1, 10) > 7:
-                    fila_tiles.append("desgaste")
+                if random.randint(1, 10) > 9:
+                    fila_tiles.append("sangre")
                 else:
                     fila_tiles.append("base")
             self.tiles.append(fila_tiles)
@@ -82,8 +82,7 @@ class Mapa:
                 
                 if tile == "#":
                     pantalla.blit(self.suelo_final, (x - camara.x, y - camara.y))
-                else:
-                    tipo = self.tiles[fila][columna]
+                else:  
                     pantalla.blit(self.suelo_base, (x - camara.x, y - camara.y))
 
     def update(self,pantalla,camara):

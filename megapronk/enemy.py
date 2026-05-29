@@ -6,21 +6,30 @@ from camara import Camara
 
 
 class Enemy:
-        def __init__(self,camara):
+        COLOR = "red"
+        SPEED = 120
+        VIDA = 100
+        DAMAGE = 10
+        TAMANO_X = 50
+        TAMANO_Y = 50
+
+        def __init__(self, camara):
             self.x = 50
             self.y = 50
             self.dx = 0
             self.dy = 0
+
+            self.tamano_x = self.TAMANO_X
+            self.tamano_y = self.TAMANO_Y
+            self.vida = self.VIDA
+            self.speed = self.SPEED
+            self.damage = self.DAMAGE
+
+            self.inmunidad = 60
             self.boton_x = False
             self.boton_y = False
-            self.tamano_x = 50
-            self.tamano_y = 50
-            self.vida = 100
-            self.inmunidad = 60
-            
+
             self.aparicion_enemigos(camara)
-            
-            self.speed = 120
 
 
         def aparicion_enemigos(self,camara):

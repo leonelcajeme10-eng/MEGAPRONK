@@ -121,7 +121,7 @@ class ProyectilOscilante(Proyectil):
         self.posicion[1] = self.base_pos[1] + perp_y * onda
 
 class ProyectilBomba(Proyectil):
-    def __init__(self, dir, pos, velocidad, danio, esp, tiempo, dimensiones, mapa, r = 1, amplitud=200, frecuencia=0.05):
+    def __init__(self, dir, pos, velocidad, danio, esp, tiempo, dimensiones, mapa):
         super().__init__(dir, list(pos), velocidad, danio, esp, tiempo, dimensiones,mapa)
         self.tiempoVida = 1
         self.estado = 0

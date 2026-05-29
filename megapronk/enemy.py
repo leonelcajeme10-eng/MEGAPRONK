@@ -76,12 +76,12 @@ class Enemy:
         
         def colisiones(self,mapa_rect):
 
-            enemigo_rect = pygame.Rect(self.x,self.y,self.tamano_x,self.tamano_y)
+            self.enemigo_rect = pygame.Rect(self.x,self.y,self.tamano_x,self.tamano_y)
 
             if self.boton_x == True:
                 self.boton_x = False
                 for pared in mapa_rect:
-                    if enemigo_rect.colliderect(pared):
+                    if self.enemigo_rect.colliderect(pared):
                         if self.dx > 0:
                             self.x = pared.left - self.tamano_x
                         elif self.dx < 0:
@@ -89,7 +89,7 @@ class Enemy:
             if self.boton_y == True:
                 self.boton_y = False  
                 for pared in mapa_rect:
-                        if enemigo_rect.colliderect(pared):
+                        if self.enemigo_rect.colliderect(pared):
                             if self.dy > 0:
                                 self.y = pared.top - self.tamano_y
                             elif self.dy < 0:
@@ -109,16 +109,31 @@ class Enemy:
                 jugador.vida -= 10
                 
 
-
-
+        def separar_enemigos(self,enemigos):
             
+            for otro_enemigo in enemigos:
+                if otro_enemigo != self:
+                    otro_enemigo.enemigo_rect = pygame.Rect(otro_enemigo.x,otro_enemigo.y,otro_enemigo.tamano_x,otro_enemigo.tamano_y)
+                    
+                    if otro_enemigo.enemigo_rect.colliderect(self.enemigo_rect):
+                            distancia_x = otro_enemigo.x - self.x
+                            distancia_y = otro_enemigo.y - self.y
+                        
+                            self.x -= distancia_x * 0.05
+
+                            otro_enemigo.x += distancia_x * 0.05
+                            self.y -= distancia_y * 0.05
+
+                            otro_enemigo.x += distancia_y * 0.05
+                
 
     
             
-        def update(self,jugador,dt,mapa,camara):
+        def update(self,jugador,dt,mapa,camara,enemigos):
             
             self.movimiento(jugador,dt,mapa.paredes)
             self.cooldown_golpe(jugador)
+            self.separar_enemigos(enemigos)
             
 
 

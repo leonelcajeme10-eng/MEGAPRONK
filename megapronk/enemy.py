@@ -15,7 +15,7 @@ class Enemy:
             self.boton_y = False
             self.tamano_x = 50
             self.tamano_y = 50
-            self.vida = 100
+            self.vida = 10
             self.inmunidad = 60
             
             self.aparicion_enemigos(camara)
@@ -134,6 +134,9 @@ class Enemy:
             self.movimiento(jugador,dt,mapa.paredes)
             self.cooldown_golpe(jugador)
             self.separar_enemigos(enemigos)
+
+            if self.vida <= 0:
+                enemigos.remove(self)
             
 
 

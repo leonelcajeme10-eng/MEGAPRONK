@@ -20,7 +20,7 @@ class Especial:
         self.cooldown_time = 0.5
         self.cooldown = 0.0
         self.tecla = tecla
-        self.Prong = prong(velocidad, self, mapa)
+        self.Prong = prong(velocidad, self, mapa, self.damage)
         self.mapa = mapa
 
     def puedeUsar(self):
@@ -39,20 +39,21 @@ class Especial:
     def eliminarProyectil(self, proyectil):
         self.proyectiles.remove(proyectil)
 
-    def updateProyectiles(self):
+    def updateProyectiles(self, enemigos):
         for proyectil in self.proyectiles:
-            proyectil.update()
+            proyectil.update(enemigos)
 
-    def update(self, dt):
+    def update(self, dt, enemigos):
         if self.cooldown > 0.0:
             self.cooldown -= dt
             if self.cooldown < 0.0:
                 self.cooldown = 0.0
-        self.updateProyectiles()
+        self.updateProyectiles(enemigos)
 
 class Proyectil:
-    def __init__(self, dir, pos, velocidad, esp, tiempo, dimensiones, mapa):
+    def __init__(self, dir, pos, velocidad, danio, esp, tiempo, dimensiones, mapa):
         self.posicion = pos
+        self.damage = danio
         self.dimension = dimensiones
         self.dirreccion = dir
         self.speed = velocidad
@@ -61,16 +62,20 @@ class Proyectil:
         self.especial = esp
         self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
         self.mapa = mapa
+        self.enemigosGolpeados = []
 
     def CalcularPos(self):
         self.posicion[0] += math.cos(self.dirreccion) * self.speed
         self.posicion[1] += math.sin(self.dirreccion) * self.speed
 
-    def update(self):
+    def update(self, enemigos):
         self.CalcularPos()
         self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
+        
         if self.colisionParedes():
             return
+
+        self.colisionEnemigos(enemigos)
 
         if pygame.time.get_ticks() - self.temporizador > self.tiempoVida * 1000:
             self.especial.eliminarProyectil(self)
@@ -81,12 +86,20 @@ class Proyectil:
                     self.especial.eliminarProyectil(self)
                     return True
         return False
-
+    
+    def colisionEnemigos(self, enemigos):
+        for enemigo in enemigos:
+            if enemigo not in self.enemigosGolpeados:
+                enemigo_rect = pygame.Rect(enemigo.x,enemigo.y,enemigo.tamano_x,enemigo.tamano_y)
+                if self.rectangulo.colliderect(enemigo_rect):
+                    enemigo.vida -= self.damage
+                    self.enemigosGolpeados.append(enemigo)
+                
+                
 class ProyectilOscilante(Proyectil):
-    def __init__(self, dir, pos, velocidad, esp, tiempo, dimensiones, mapa, r = 1, amplitud=200, frecuencia=0.05):
-        super().__init__(dir, list(pos), velocidad, esp, tiempo, dimensiones,mapa)
+    def __init__(self, dir, pos, velocidad, danio, esp, tiempo, dimensiones, mapa, r = 1, amplitud=200, frecuencia=0.05):
+        super().__init__(dir, list(pos), velocidad, danio, esp, tiempo, dimensiones,mapa)
         
-        # 2. Creamos OTRA copia independiente para el eje base
         self.base_pos = list(pos)
         self.amplitud = amplitud    
         self.frecuencia = frecuencia  
@@ -107,33 +120,100 @@ class ProyectilOscilante(Proyectil):
         self.posicion[0] = self.base_pos[0] + perp_x * onda
         self.posicion[1] = self.base_pos[1] + perp_y * onda
 
+class ProyectilBomba(Proyectil):
+    def __init__(self, dir, pos, velocidad, danio, esp, tiempo, dimensiones, mapa, r = 1, amplitud=200, frecuencia=0.05):
+        super().__init__(dir, list(pos), velocidad, danio, esp, tiempo, dimensiones,mapa)
+        self.tiempoVida = 1
+        self.estado = 0
+        self.temporizadorexplosion = 0
+
+    def update(self, enemigos):
+        
+        if self.estado == 0:
+            self.CalcularPos()
+            self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
+        
+            if self.colisionParedes():
+                self.CrearExplosion()
+                return
+
+            if self.colisionEnemigos(enemigos):
+                self.CrearExplosion()
+                return
+
+            if pygame.time.get_ticks() - self.temporizador > self.tiempoVida * 1000:
+                self.CrearExplosion()
+                return
+        else:
+            
+            self.colisionExplosion(enemigos)
+
+            if pygame.time.get_ticks() - self.temporizadorexplosion > 0.2 * 1000:
+                self.especial.eliminarProyectil(self)
+
+    def CrearExplosion(self):
+        self.dimension = [150, 150]
+        self.estado = 1
+        self.temporizadorexplosion = pygame.time.get_ticks()
+        self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
+    
+    def colisionParedes(self):
+        for pared in self.mapa.paredes:
+                if self.rectangulo.colliderect(pared):
+                    return True
+        return False
+
+    def colisionEnemigos(self, enemigos):
+        for enemigo in enemigos:
+                enemigo_rect = pygame.Rect(enemigo.x,enemigo.y,enemigo.tamano_x,enemigo.tamano_y)
+                if self.rectangulo.colliderect(enemigo_rect):
+                    return True
+        return False
+    
+    def colisionExplosion(self, enemigos):
+        for enemigo in enemigos:
+            if enemigo not in self.enemigosGolpeados:
+                enemigo_rect = pygame.Rect(enemigo.x,enemigo.y,enemigo.tamano_x,enemigo.tamano_y)
+                if self.rectangulo.colliderect(enemigo_rect):
+                    enemigo.vida -= self.damage
+                    self.enemigosGolpeados.append(enemigo)
+
 class Prong:
-    def __init__(self, velocidad, esp, mapa):
+    def __init__(self, velocidad, esp, mapa, danio):
         self.dimension = [80, 80]
         self.speed = velocidad
         self.tiempoVida = 5
         self.especial = esp
         self.mapa = mapa
+        self.damage = danio
         self.icono = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "disparo_pronk.png"))
         self.icono = pygame.transform.smoothscale(self.icono, (85, 85))
     
     def lanzarProyectil(self, dir, pos):
-        proyectil = Proyectil(dir, pos, self.speed * 4, self.especial, 5, self.dimension, self.mapa)
+        proyectil = Proyectil(dir, pos, self.speed * 4, self.damage, self.especial, 5, self.dimension, self.mapa)
         self.especial.proyectiles.append(proyectil)
 
 class BolaFuego(Prong):
-    def __init__(self, velocidad, esp, mapa):
-        super().__init__(velocidad, esp, mapa)
+    def __init__(self, velocidad, esp, mapa, danio):
+        super().__init__(velocidad, esp, mapa, danio)
         self.dimension = [50, 50]
         self.icono = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "bolafuego_pronk.png"))
         self.icono = pygame.transform.smoothscale(self.icono, (90, 90))
 
     def lanzarProyectil(self, dir, pos):
-        proyectil = ProyectilOscilante(dir, pos, self.speed, self.especial, 5, self.dimension, self.mapa, 1)
+        proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, 1)
         self.especial.proyectiles.append(proyectil)
-        proyectil = ProyectilOscilante(dir, pos, self.speed, self.especial, 5, self.dimension, self.mapa, -1)
+        proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, -1)
+        self.especial.proyectiles.append(proyectil)
+
+class ProngBomba(Prong):
+    def __init__(self, velocidad, esp, mapa, danio):
+        super().__init__(velocidad, esp, mapa, danio)
+
+    def lanzarProyectil(self, dir, pos):
+        proyectil = ProyectilBomba(dir, pos, self.speed * 4, self.damage, self.especial, 5, self.dimension, self.mapa)
         self.especial.proyectiles.append(proyectil)
 
 class Principal:
@@ -165,17 +245,17 @@ class Principal:
     def eliminarHitbox(self, htbx):
         self.hitbox.remove(htbx)
 
-    def updateHitbox(self, pos):
+    def updateHitbox(self, pos, damage):
         for x in self.hitbox:
-            x.update(pos)
+            x.update(pos, damage)
 
-    def update(self, dt, pos):
+    def update(self, dt, pos, damage):
         if self.cooldown > 0.0:
             self.cooldown -= dt
             if self.cooldown < 0.0:
                 self.cooldown = 0.0
 
-        self.updateHitbox(pos) 
+        self.updateHitbox(pos, damage) 
 
 class SetAtaque:
     def __init__(self, daño, prin):
@@ -276,17 +356,29 @@ class Hitbox():
         self.expresion = exp
         self.posicion = self.operar(self.expresion, pos)
         self.dimension = dim
+        self.damage = prin.damage
         self.tiempoVida = tiempo
         self.temporizador = pygame.time.get_ticks()
         self.principal = prin
         self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
-    
-    def update(self, pos):
+        self.enemigosGolpeados = []
+
+    def update(self, pos, enemigos):
         self.posicion = self.operar(self.expresion, pos)
         self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
-    
+
+        self.colisionEnemigos(enemigos)
+
         if pygame.time.get_ticks() - self.temporizador > self.tiempoVida * 1000:
             self.principal.eliminarHitbox(self)
     
     def operar(self, func, a):
         return func(a)  
+    
+    def colisionEnemigos(self, enemigos):
+        for enemigo in enemigos:
+            if enemigo not in self.enemigosGolpeados:
+                enemigo_rect = pygame.Rect(enemigo.x,enemigo.y,enemigo.tamano_x,enemigo.tamano_y)
+                if self.rectangulo.colliderect(enemigo_rect):
+                    enemigo.vida -= self.damage
+                    self.enemigosGolpeados.append(enemigo)

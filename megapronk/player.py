@@ -152,7 +152,7 @@ class Player:
 
 
         
-    def update(self, dt,mapa,camara):
+    def update(self, dt, mapa, camara, enemigos):
         self.tiempo += dt
         self.input(camara)
         self.movimiento(mapa.paredes)
@@ -161,9 +161,9 @@ class Player:
         self.actualizar_animacion(dt)
         
         for prong in self.prong.prongs:
-            prong.update(dt)
+            prong.update(dt, enemigos)
         center = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
-        self.principal.update(dt, center)
+        self.principal.update(dt, center, enemigos)
     
     def dibujar(self,pantalla,camara):
         frame = self.animaciones[self.direccion][self.frame_actual]

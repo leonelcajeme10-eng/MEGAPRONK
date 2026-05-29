@@ -1,6 +1,6 @@
 import pygame
 from player import Player
-from enemy import Enemy
+from enemy import Enemy, crear_enemigo
 from mapa import Mapa
 from camara import Camara
 from prong import Prong, BolaFuego
@@ -61,7 +61,7 @@ while ejecutando:
 
     tiempo_spawn += dt
     if tiempo_spawn >= 1:
-        enemigos.append(Enemy(camara))
+        enemigos.append(crear_enemigo(camara))
         tiempo_spawn = 0
 
     jugador.update(dt, mapa, camara)

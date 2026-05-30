@@ -1,24 +1,26 @@
 def danioBaseAumento(esp, prong, aumento):
     esp.damage += aumento
-    prong.damage += esp.damage * esp.multiDamage
+    prong.damage = esp.damage * esp.multiDamage
 
 def danioMulti(esp, prong, multi):
     esp.multiDamage *= multi
-    prong.damage += esp.damage * esp.multiDamage
+    prong.damage = esp.damage * esp.multiDamage
 
 def prongAumentoArea(esp, prong, aumento):
     esp.multiArea += aumento
-    prong.dimensiones = [prong.dimensionOriginal[0] * esp.multiArea, prong.dimensionOriginal[1] * esp.multiarea]
+    prong.dimension = [prong.dimensionOriginal[0] * esp.multiArea, prong.dimensionOriginal[1] * esp.multiArea]
 
 def prongMultiArea(esp, prong, multi):
     esp.multiArea *= multi
-    prong.dimensiones = [prong.dimensionOriginal[0] * esp.multiArea, prong.dimensionOriginal[1] * esp.multiarea]
+    prong.dimension = [prong.dimensionOriginal[0] * esp.multiArea, prong.dimensionOriginal[1] * esp.multiArea]
 
 def disminuirCooldown(esp, prong, decremento):
     esp.cooldown_time -= decremento
 
-def prongAumentoArea(esp, set, aumento):
-    esp.multiArea += aumento
+def principalAumentoArea(principal, set, aumento):
+    principal.multiDimensiones += aumento
+    set.dimensionesMulti = principal.multiDimensiones
 
-def prongAumentoArea(esp, set, multi):
-    esp.multiArea *= multi
+def principalMultiArea(principal, set, multi):
+    principal.multiDimensiones *= multi
+    set.dimensionesMulti = principal.multiDimensiones

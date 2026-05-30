@@ -63,8 +63,9 @@ while ejecutando:
                 estado = "menu"
                 pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "menu.ogg"))
                 pygame.mixer.music.play(-1)
+
+            seleccion.manejar_evento(evento, jugador)
         
-    opcion = seleccion.manejar_evento(evento, jugador)
     dt = clock.tick(60) / 1000.0
     
     pause.actualizar(dt)

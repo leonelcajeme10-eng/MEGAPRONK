@@ -192,10 +192,9 @@ class Player:
         draw_y = self.y - camara.y - 20
         
         for prong in self.prong.prongs:
-            for x in prong.proyectiles:
-                pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
-                x.dibujar(pantalla, camara) ### Encima para ver si funciona xd
-                pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x[0].rectangulo))
+            for proyectil, tipo in prong.proyectiles:
+                pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(proyectil.rectangulo)) #azul para hitbox
+                proyectil.dibujar(pantalla, camara) ### Encima para ver si funciona xd
 
         for x in self.principal.hitbox:
             pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))

@@ -11,6 +11,8 @@ import os
 ruta_actual = os.path.dirname(__file__)
 import ctypes
 ctypes.windll.user32.SetProcessDPIAware()
+from enemigo_mariposa import Mariposa
+from fantasma import Fantasma
 
 pygame.init()
 pygame.mixer.init()
@@ -91,7 +93,8 @@ while ejecutando:
 
     tiempo_spawn += dt
     if tiempo_spawn >= 1:
-        enemigos.append(Enemy(camara))
+        enemigos.append(Fantasma(camara))
+        enemigos.append(Mariposa(camara))
         tiempo_spawn = 0
 
     jugador.update(dt, mapa, camara, enemigos)

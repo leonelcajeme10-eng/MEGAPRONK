@@ -6,21 +6,33 @@ from camara import Camara
 
 
 class Enemy:
-        def __init__(self,camara):
+        COLOR = "red"
+        SPEED = 120
+        VIDA = 100
+        DAMAGE = 10
+        TAMANO_X = 50
+        TAMANO_Y = 50
+
+        def __init__(self, camara):
             self.x = 50
             self.y = 50
             self.dx = 0
             self.dy = 0
+
+            self.tamano_x = self.TAMANO_X
+            self.tamano_y = self.TAMANO_Y
+            self.vida = self.VIDA
+            self.speed = self.SPEED
+            self.damage = self.DAMAGE
+            self.color = self.COLOR
+
+            self.inmunidad = 60
             self.boton_x = False
             self.boton_y = False
-            self.tamano_x = 50
-            self.tamano_y = 50
-            self.vida = 10
-            self.inmunidad = 60
+
+            
             
             self.aparicion_enemigos(camara)
-            
-            self.speed = 120
 
 
         def aparicion_enemigos(self,camara):
@@ -106,7 +118,7 @@ class Enemy:
 
             if jugador_rect.colliderect(enemigo_rect) and self.inmunidad <= 0:
                 self.inmunidad = 60
-                jugador.vida -= 10
+                jugador.vida -= self.damage
                 
 
         def separar_enemigos(self,enemigos):
@@ -142,7 +154,7 @@ class Enemy:
 
         
         def dibujar(self,pantalla,camara):
-            pygame.draw.rect(pantalla,"red",(self.x - camara.x,self.y - camara.y,self.tamano_x,self.tamano_y))
+            pygame.draw.rect(pantalla,self.color,(self.x - camara.x,self.y - camara.y,self.tamano_x,self.tamano_y))
 
 
 

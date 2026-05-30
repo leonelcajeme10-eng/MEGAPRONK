@@ -2,6 +2,9 @@ import pygame
 import math
 from prong import Prongs, Principal
 from camara import Camara
+import random
+import os
+ruta_actual = os.path.dirname(__file__)
 
 class Player:
     def __init__(self, mapa):
@@ -23,6 +26,9 @@ class Player:
         self.dt = 1
         self.boton_x = False
         self.boton_y = False
+        self.tiempo_golpe_visual = 0
+        self.duracion_golpe_visual = 160
+        self.ultima_vida = self.vida
         self.prong = Prongs(mapa)
         self.principal = Principal()
         
@@ -39,6 +45,10 @@ class Player:
         self.velocidad_idle = 400
         self.velocidad_walk = 120
         self.ultimo_cambio_frame = pygame.time.get_ticks()
+
+        #Sonidos
+        self.sonido_herido = pygame.mixer.Sound(os.path.join(ruta_actual, "assets", "sounds", "hurt.mp3"))
+
 
         self.animaciones = self.cargar_animaciones()
 
@@ -164,20 +174,18 @@ class Player:
             prong.update(dt, enemigos)
         center = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
         self.principal.update(dt, center, enemigos)
+        
+        if self.vida < self.ultima_vida:
+            self.tiempo_golpe_visual = pygame.time.get_ticks()
+            self.sonido_herido.play()
+
+        self.ultima_vida = self.vida
     
     def dibujar(self,pantalla,camara):
         frame = self.animaciones[self.direccion][self.frame_actual]
 
         draw_x = self.x - camara.x
         draw_y = self.y - camara.y - 20
-
-        pantalla.blit(
-            frame,
-            (
-                int(draw_x),
-                int(draw_y)
-            )
-        )
         
         for prong in self.prong.prongs:
             for x in prong.proyectiles:
@@ -185,6 +193,19 @@ class Player:
 
         for x in self.principal.hitbox:
             pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
+            
+        golpeado = pygame.time.get_ticks() - self.tiempo_golpe_visual < self.duracion_golpe_visual
+        
+        if golpeado:
+            frame = frame.copy()
+            
+            rojo = pygame.Surface(frame.get_size(), pygame.SRCALPHA)
+            rojo.fill((255, 0, 0, 90))
+            frame.fill((255, 80, 80, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            draw_x += random.randint(-4, 4)
+            draw_y += random.randint(-4, 4)
+            
+        pantalla.blit(frame, (int(draw_x), int(draw_y)))
             
     def obtener_tiempo(self):
         minutos = int(self.tiempo) // 60
@@ -244,3 +265,4 @@ class Player:
 
             if self.frame_actual >= total_frames:
                 self.frame_actual = 0
+            

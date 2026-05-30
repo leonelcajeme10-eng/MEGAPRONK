@@ -42,6 +42,8 @@ class Player:
         self.estado = "idle"
         self.frame_actual = 0
         self.velocidad_idle = 400
+
+
         self.velocidad_walk = 120
         self.ultimo_cambio_frame = pygame.time.get_ticks()
 
@@ -190,9 +192,7 @@ class Player:
         
         for prong in self.prong.prongs:
             for x in prong.proyectiles:
-                pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
-                x.dibujar(pantalla, camara)
-                pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x[0].rectangulo))
+                x[0].dibujar(pantalla, camara)
 
         for x in self.principal.hitbox:
             pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))

@@ -247,8 +247,6 @@ class Prong:
     def lanzarProyectil(self, dir, pos):
         proyectil = Proyectil(dir, pos, self.speed * 4, self.damage, self.especial, 5, self.dimension, self.mapa)
         self.asignar_animacion(proyectil) ###
-        self.especial.proyectiles.append(proyectil)
-        
         
     ### definir animacion del proyectil
     def asignar_animacion(self, proyectil):
@@ -279,17 +277,13 @@ class BolaFuego(Prong):
     def lanzarProyectil(self, dir, pos):
         proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, 1)
         self.asignar_animacion(proyectil) ###
-        self.especial.proyectiles.append(proyectil)
         proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, -1)
         self.asignar_animacion(proyectil) ###
-        self.especial.proyectiles.append(proyectil)
         
     #definir animacion del proyectil
     def asignar_animacion(self, proyectil):
         proyectil.animador = AnimadorHorizontal(os.path.join(ruta_actual,"assets","images","prong1_spritesheet.png"), columnas=5, escala=1, velocidad_ms=80, loop=True)
         proyectil.rotar_sprite = False
-        self.especial.proyectiles.append([proyectil, "Fuego"])
-        proyectil = ProyectilOscilante(dir, self.pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, -1)
         self.especial.proyectiles.append([proyectil, "Fuego"])
 
 class ProngBomba(Prong):
@@ -303,7 +297,7 @@ class ProngBomba(Prong):
     def lanzarProyectil(self, dir, pos):
         proyectil = ProyectilBomba(dir, pos, self.speed * 4, self.damage, self.especial, 5, self.dimension, self.mapa)
         self.asignar_animacion(proyectil) ###
-        self.especial.proyectiles.append(proyectil)
+        self.especial.proyectiles.append([proyectil, "omba"])
         
     ### definir animacion del proyectil
     def asignar_animacion(self, proyectil):

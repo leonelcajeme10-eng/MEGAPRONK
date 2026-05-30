@@ -197,7 +197,7 @@ class Prong:
     
     def lanzarProyectil(self, dir, pos):
         proyectil = Proyectil(dir, pos, self.speed * 4, self.damage, self.especial, 5, self.dimension, self.mapa)
-        self.especial.proyectiles.append(proyectil)
+        self.especial.proyectiles.append([proyectil, "Proyectil"])
 
 class BolaFuego(Prong):
     def __init__(self, velocidad, esp, mapa, danio, multiarea):
@@ -211,7 +211,7 @@ class BolaFuego(Prong):
         proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, 1)
         self.especial.proyectiles.append(proyectil)
         proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, -1)
-        self.especial.proyectiles.append(proyectil)
+        self.especial.proyectiles.append([proyectil, "Fuego"])
 
 class ProngBomba(Prong):
     def __init__(self, velocidad, esp, mapa, danio, multiarea):
@@ -221,7 +221,7 @@ class ProngBomba(Prong):
 
     def lanzarProyectil(self, dir, pos):
         proyectil = ProyectilBomba(dir, pos, self.speed * 4, self.damage, self.especial, 5, self.dimension, self.mapa)
-        self.especial.proyectiles.append(proyectil)
+        self.especial.proyectiles.append([proyectil, "Bomba"])
 
 class Principal:
     def __init__(self):

@@ -6,40 +6,40 @@ ruta_actual = os.path.dirname(__file__)
 class UI:
     def __init__(self):
         self.font = pygame.font.Font(
-        os.path.join(ruta_actual, "assets", "fonts", "Cinzel-VariableFont_wght.ttf"), 30)
+        os.path.join(ruta_actual, "assets", "fonts", "Cinzel-VariableFont_wght.ttf"), 40)
         self.font2 = pygame.font.Font(
-        os.path.join(ruta_actual, "assets", "fonts", "Cinzel-VariableFont_wght.ttf"), 35)
+        os.path.join(ruta_actual, "assets", "fonts", "Cinzel-VariableFont_wght.ttf"), 45)
         self.marco_hp = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "vida_ui.png")
         ).convert_alpha()
         self.marco_hp = pygame.transform.smoothscale(
         self.marco_hp,
-        (400, 200))  
+        (520, 270))  
         self.marco_exp = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "exp_ui.png")
         ).convert_alpha()
         self.marco_exp = pygame.transform.smoothscale(
         self.marco_exp,
-        (700, 80)
+        (1000, 115)
         )
         self.marco_lvl = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "lvl_ui.png")
         ).convert_alpha()
         self.marco_lvl = pygame.transform.smoothscale(
         self.marco_lvl,
-        (100, 100)
+        (130, 130)
         )
         self.marco_kills = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "kills_ui.png"))
-        self.marco_kills = pygame.transform.smoothscale(self.marco_kills, (200, 100))
+        self.marco_kills = pygame.transform.smoothscale(self.marco_kills, (235, 135))
         
         self.logo_kills = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "logo_kills.png"))
-        self.logo_kills = pygame.transform.smoothscale(self.logo_kills, (72, 72))
+        self.logo_kills = pygame.transform.smoothscale(self.logo_kills, (82, 82))
         
         self.pronks_ui = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "pronks_ui.png"))
-        self.pronks_ui = pygame.transform.smoothscale(self.pronks_ui, (370,185))
+        self.pronks_ui = pygame.transform.smoothscale(self.pronks_ui, (500,265))
         
         self.disparo_pronk = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "disparo_pronk.png"))
@@ -58,13 +58,13 @@ class UI:
         self.dibujar_pronks(pantalla, jugador)
         
     def dibujar_barra_vida(self, pantalla, jugador):
-        x = 220
-        y = 140
+        x = 60
+        y = 35
 
-        barra_x = x + 71
-        barra_y = y + 21
-        barra_ancho = 285
-        barra_alto = 24
+        barra_x = x + 126
+        barra_y = y + 107
+        barra_ancho = 375
+        barra_alto = 36
 
         porcentaje_vida = jugador.vida / jugador.vida_max
         porcentaje_vida = max(0, min(1, porcentaje_vida))
@@ -75,17 +75,17 @@ class UI:
         pygame.draw.rect(pantalla, (190, 25, 40), (barra_x, barra_y, ancho_actual, barra_alto))
         pygame.draw.rect(pantalla, (255, 120, 120), (barra_x + 3, barra_y + 3, ancho_actual - 6, 6))
 
-        pantalla.blit(self.marco_hp, (x-19, y-62))
+        pantalla.blit(self.marco_hp, (x, y))
 
     def dibujar_barra_exp(self, pantalla, jugador):
         
-        x = 600
-        y = 100
+        x = 470
+        y = 18
 
-        barra_x = x + 75
-        barra_y = y + 25
-        barra_ancho = 560
-        barra_alto = 24
+        barra_x = x + 95
+        barra_y = y + 35
+        barra_ancho = 780
+        barra_alto = 34
 
         porcentaje_exp = jugador.exp / jugador.exp_max
         porcentaje_exp = max(0, min(1, porcentaje_exp))
@@ -100,7 +100,7 @@ class UI:
         pantalla.blit(self.marco_exp, (x, y))
     
     def dibujar_lvl(self, pantalla, jugador):
-        x = 1300
+        x = 1430
         y = 110
         
         nivel = self.font.render(
@@ -109,34 +109,34 @@ class UI:
         (255,255,255))
         
         pantalla.blit(self.marco_lvl, (x,y))
-        pantalla.blit(nivel, (x+19, y+30))
+        pantalla.blit(nivel, (x+22, y+36))
         
     def dibujar_kills(self, pantalla, jugador):
-        x = 1450
-        y = 110
+        x = 1620
+        y = 108
         
-        kills = self.font2.render(f"{jugador.kills}", True, (255,255,255))
+        kills = self.font.render(f"{jugador.kills}", True, (255,255,255))
         pantalla.blit(self.marco_kills, (x,y))
-        pantalla.blit(self.logo_kills, (x+100, y+12))
-        pantalla.blit(kills, (x+43, y+27))
+        pantalla.blit(self.logo_kills, (x+112, y+25))
+        pantalla.blit(kills, (x+42, y+40))
         
     def dibujar_tiempo(self, pantalla, jugador):
         x = pantalla.get_width() / 2
-        y = 170
+        y = 130
         
         tiempo = self.font2.render(f"{jugador.obtener_tiempo()}", True, (255,255,255))
         pantalla.blit(tiempo, (x-50, y))
         
     def dibujar_pronks(self, pantalla, jugador):
-        x = 300
-        y = 750 
+        x = 220
+        y = 770 
         
         
         pantalla.blit(self.pronks_ui, (x, y))
         
         for i, prong in enumerate(jugador.prong.prongs):
-            slot_x = x + 8 + i * 125
-            slot_y = y + 38
+            slot_x = x + 33 + i * 165
+            slot_y = y + 75
 
             slot_ancho = 100
             slot_alto = 100

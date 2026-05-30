@@ -188,7 +188,7 @@ class Prong:
         self.damage = danio
         self.icono = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "disparo_pronk.png"))
-        self.icono = pygame.transform.smoothscale(self.icono, (85, 85))
+        self.icono = pygame.transform.smoothscale(self.icono, (130, 130))
     
     def lanzarProyectil(self, dir, pos):
         proyectil = Proyectil(dir, pos, self.speed * 4, self.damage, self.especial, 5, self.dimension, self.mapa)
@@ -200,7 +200,7 @@ class BolaFuego(Prong):
         self.dimension = [50, 50]
         self.icono = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "bolafuego_pronk.png"))
-        self.icono = pygame.transform.smoothscale(self.icono, (90, 90))
+        self.icono = pygame.transform.smoothscale(self.icono, (135, 135))
 
     def lanzarProyectil(self, dir, pos):
         proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, 1)

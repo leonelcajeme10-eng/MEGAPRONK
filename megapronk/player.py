@@ -164,6 +164,9 @@ class Player:
             prong.update(dt, enemigos)
         center = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
         self.principal.update(dt, center, enemigos)
+
+        if self.exp >= self.exp_max:
+            self.subirNivel()
     
     def dibujar(self,pantalla,camara):
         frame = self.animaciones[self.direccion][self.frame_actual]
@@ -244,3 +247,10 @@ class Player:
 
             if self.frame_actual >= total_frames:
                 self.frame_actual = 0
+
+    def subirNivel(self):
+        self.exp %= self.exp_max
+        self.exp_max += 20
+        self.nivel += 1
+
+

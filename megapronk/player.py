@@ -10,10 +10,10 @@ class Player:
     def __init__(self, mapa):
         self.x = 700
         self.y = 700
-        self.vida = 80
+        self.vida = 100
         self.vida_max = 100
-        self.mana = 100
-        self.exp = 20
+        self.mana = 0
+        self.exp = 99
         self.exp_max = 100
         self.nivel = 0
         self.kills = 0
@@ -31,6 +31,7 @@ class Player:
         self.ultima_vida = self.vida
         self.prong = Prongs(mapa)
         self.principal = Principal()
+        self.seleccionando_prong = False
         
         # Tamaño visual de cada frame del sprite sheet
         self.sprite_ancho = 70
@@ -274,5 +275,6 @@ class Player:
         self.exp %= self.exp_max
         self.exp_max += 20
         self.nivel += 1
+        self.seleccionando_prong = True
 
 

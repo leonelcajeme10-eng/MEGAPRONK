@@ -1,6 +1,6 @@
 import pygame
 import os
-from prong import BolaFuego
+from prong import Prong, BolaFuego, ProngBomba
 
 ruta_actual = os.path.dirname(__file__)
 

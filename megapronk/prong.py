@@ -299,8 +299,8 @@ class SetAtaque:
         return expr
     
 class SetLigero(SetAtaque):
-    def __init__(self, daño, prin):
-        super().__init__(daño, prin)
+    def __init__(self, daño, prin, dimensiones):
+        super().__init__(daño, prin, dimensiones)
         self.intervalo = 1
         self.tiempo = 0.3
         self.damage = daño

@@ -244,3 +244,4 @@ class Player:
 
             if self.frame_actual >= total_frames:
                 self.frame_actual = 0
+                

@@ -10,3 +10,7 @@ class Mariposa(Enemy):
 
     def __init__(self, camara):
         super().__init__(camara)
+
+
+    
+    

@@ -12,7 +12,8 @@ ruta_actual = os.path.dirname(__file__)
 import ctypes
 ctypes.windll.user32.SetProcessDPIAware()
 from enemigo_mariposa import Mariposa
-from fantasma import Fantasma
+from fantasma import Fantasma,Proyectil_enemigo
+
 
 pygame.init()
 pygame.mixer.init()
@@ -34,6 +35,9 @@ enemigos = []
 pause = PauseMenu(1920, 1080)
 menu = Menu(1920, 1080)
 estado = "menu"
+proyectiles = []
+
+
 
 jugador.agregarProng(pygame.K_1, BolaFuego)
 jugador.agregarProng(pygame.K_2, Prong)
@@ -91,22 +95,26 @@ while ejecutando:
         continue
 
 
+    jugador.update(dt, mapa, camara, enemigos)
+    camara.update(jugador, dt, mapa)
+
     tiempo_spawn += dt
     if tiempo_spawn >= 1:
         enemigos.append(Fantasma(camara))
         enemigos.append(Mariposa(camara))
         tiempo_spawn = 0
 
-    jugador.update(dt, mapa, camara, enemigos)
-    camara.update(jugador, dt, mapa)
-
     pantalla.fill((255, 255, 255))
     mapa.update(pantalla, camara)
     jugador.dibujar(pantalla, camara)
 
     for enemigo in enemigos:
-        enemigo.update(jugador, dt, mapa, camara,enemigos)
+        enemigo.update(jugador, dt, mapa, camara,enemigos,proyectiles)
         enemigo.dibujar(pantalla, camara)
+    
+    for proyectil in proyectiles:
+        proyectil.update(mapa,proyectiles,camara,dt,jugador)
+        proyectil.dibujar(pantalla,camara)
 
     ui.dibujar_hud(pantalla, jugador)
     pause.dibujar(pantalla)

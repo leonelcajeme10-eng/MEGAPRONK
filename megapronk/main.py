@@ -3,7 +3,7 @@ from player import Player
 from enemy import Enemy
 from mapa import Mapa
 from camara import Camara
-from prong import Prong, BolaFuego
+from prong import Prong, BolaFuego, ProngBomba
 from ui import UI
 from pausa import PauseMenu
 from enemigo_mariposa import Mariposa
@@ -28,7 +28,7 @@ pause = PauseMenu(1920, 1080)
 
 jugador.agregarProng(pygame.K_1, BolaFuego)
 jugador.agregarProng(pygame.K_2, Prong)
-jugador.agregarProng(pygame.K_3, Prong)
+jugador.agregarProng(pygame.K_3, ProngBomba)
 
 ejecutando = True
 
@@ -67,7 +67,7 @@ while ejecutando:
         enemigos.append(Mariposa(camara))
         tiempo_spawn = 0
 
-    jugador.update(dt, mapa, camara)
+    jugador.update(dt, mapa, camara, enemigos)
     camara.update(jugador, dt, mapa)
 
     pantalla.fill((255, 255, 255))

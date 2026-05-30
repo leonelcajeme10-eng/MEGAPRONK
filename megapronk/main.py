@@ -6,6 +6,8 @@ from camara import Camara
 from prong import Prong, BolaFuego
 from ui import UI
 from pausa import PauseMenu
+from enemigo_mariposa import Mariposa
+from fantasma import Fantasma
 
 pygame.init()
 
@@ -61,7 +63,8 @@ while ejecutando:
 
     tiempo_spawn += dt
     if tiempo_spawn >= 1:
-        enemigos.append(Enemy(camara))
+        enemigos.append(Fantasma(camara))
+        enemigos.append(Mariposa(camara))
         tiempo_spawn = 0
 
     jugador.update(dt, mapa, camara)

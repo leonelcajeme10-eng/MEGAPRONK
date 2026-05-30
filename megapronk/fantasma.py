@@ -1,9 +1,9 @@
 from enemy import Enemy
 
-class Mariposa(Enemy):
-    COLOR = "pink"
-    SPEED = 120
-    VIDA = 60
+class Fantasma(Enemy):
+    COLOR = "white"
+    SPEED = 100
+    VIDA = 100
     DAMAGE = 10
     TAMANO_X = 50
     TAMANO_Y = 50

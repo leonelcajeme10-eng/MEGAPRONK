@@ -24,6 +24,7 @@ class Enemy:
             self.vida = self.VIDA
             self.speed = self.SPEED
             self.damage = self.DAMAGE
+            self.color = self.COLOR
 
             self.inmunidad = 60
             self.boton_x = False
@@ -115,7 +116,7 @@ class Enemy:
 
             if jugador_rect.colliderect(enemigo_rect) and self.inmunidad <= 0:
                 self.inmunidad = 60
-                jugador.vida -= 10
+                jugador.vida -= self.damage
                 
 
         def separar_enemigos(self,enemigos):
@@ -148,7 +149,7 @@ class Enemy:
 
         
         def dibujar(self,pantalla,camara):
-            pygame.draw.rect(pantalla,"red",(self.x - camara.x,self.y - camara.y,self.tamano_x,self.tamano_y))
+            pygame.draw.rect(pantalla,self.color,(self.x - camara.x,self.y - camara.y,self.tamano_x,self.tamano_y))
 
 
 

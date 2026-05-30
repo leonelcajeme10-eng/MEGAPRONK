@@ -34,7 +34,7 @@ tiempo_spawn = 0
 enemigos = []
 pause = PauseMenu(1920, 1080)
 menu = Menu(1920, 1080)
-seleccion = SeleccionarProngs()
+seleccion = SeleccionarProngs(jugador)
 estado = "menu"
 
 ejecutando = True
@@ -64,7 +64,7 @@ while ejecutando:
                 pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "menu.ogg"))
                 pygame.mixer.music.play(-1)
         
-    opcion = seleccion.manejar_evento(evento, jugador)
+    seleccion.manejar_evento(evento)
     dt = clock.tick(60) / 1000.0
     
     pause.actualizar(dt)

@@ -9,7 +9,9 @@ class Prongs:
         self.mapa = mapa
 
     def asignarProng(self, tecla, prong, velocidad = 4):
-        self.prongs.append(Especial(tecla, prong, velocidad,  self.mapa))
+        especial = Especial(tecla, prong, velocidad,  self.mapa)
+        self.prongs.append(especial)
+        return especial
 
     def aplicarCambio(self, funcion, especial, magnitud):
         funcion(especial, especial.prong, magnitud)
@@ -41,10 +43,12 @@ class Especial:
         return True
 
     def eliminarProyectil(self, proyectil):
-        self.proyectiles.remove(proyectil)
+        for x in self.proyectiles:
+            if x[0] == proyectil:
+                self.proyectiles.remove(x)
 
     def updateProyectiles(self, enemigos):
-        for proyectil in self.proyectiles:
+        for proyectil, tipo in self.proyectiles:
             proyectil.update(enemigos)
 
     def update(self, dt, enemigos):
@@ -209,7 +213,7 @@ class BolaFuego(Prong):
 
     def lanzarProyectil(self, dir, pos):
         proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, 1)
-        self.especial.proyectiles.append(proyectil)
+        self.especial.proyectiles.append([proyectil, "Fuego"])
         proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, -1)
         self.especial.proyectiles.append([proyectil, "Fuego"])
 

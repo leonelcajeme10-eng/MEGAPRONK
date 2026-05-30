@@ -41,13 +41,10 @@ class Player:
         self.direccion = "down"
         self.estado = "idle"
         self.frame_actual = 0
-
-        # Milisegundos entre cada frame
         self.velocidad_idle = 400
         self.velocidad_walk = 120
         self.ultimo_cambio_frame = pygame.time.get_ticks()
 
-        #Sonidos
         self.sonido_herido = pygame.mixer.Sound(os.path.join(ruta_actual, "assets", "sounds", "hurt.mp3"))
 
 
@@ -192,8 +189,10 @@ class Player:
         draw_y = self.y - camara.y - 20
         
         for prong in self.prong.prongs:
-            for proyectil, tipo in prong.proyectiles:
-                pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(proyectil.rectangulo))
+            for x in prong.proyectiles:
+                pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
+                x.dibujar(pantalla, camara)
+                pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x[0].rectangulo))
 
         for x in self.principal.hitbox:
             pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))

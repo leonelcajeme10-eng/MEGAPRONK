@@ -10,17 +10,21 @@ class Prongs:
 
     def asignarProng(self, tecla, prong, velocidad = 4):
         self.prongs.append(Especial(tecla, prong, velocidad,  self.mapa))
+
+    def aplicarCambio(self, funcion, especial, magnitud):
+        funcion(especial, especial.prong, magnitud)
     
 class Especial:
     def __init__(self, tecla, prong, velocidad, mapa):
-        self.costo = 10
         self.speed = velocidad
         self.damage = 10
+        self.multiDamage = 1
+        self.multiArea = 1
         self.proyectiles = []
-        self.cooldown_time = 0.5
+        self.cooldown_time = 5
         self.cooldown = 0.0
         self.tecla = tecla
-        self.Prong = prong(velocidad, self, mapa, self.damage)
+        self.Prong = prong(velocidad, self, mapa, self.damage * self.multiDamage, self.multiArea)
         self.mapa = mapa
 
     def puedeUsar(self):
@@ -152,7 +156,7 @@ class ProyectilBomba(Proyectil):
                 self.especial.eliminarProyectil(self)
 
     def CrearExplosion(self):
-        self.dimension = [150, 150]
+        self.dimension = [self.dimension[0] * 5, self.dimension[1] * 5]
         self.estado = 1
         self.temporizadorexplosion = pygame.time.get_ticks()
         self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
@@ -179,8 +183,9 @@ class ProyectilBomba(Proyectil):
                     self.enemigosGolpeados.append(enemigo)
 
 class Prong:
-    def __init__(self, velocidad, esp, mapa, danio):
-        self.dimension = [80, 80]
+    def __init__(self, velocidad, esp, mapa, danio, multiarea):
+        self.dimensionOriginal = [80, 80]
+        self.dimension = [self.dimensionOriginal[0] * multiarea, self.dimensionOriginal[1] * multiarea]
         self.speed = velocidad
         self.tiempoVida = 5
         self.especial = esp
@@ -195,9 +200,9 @@ class Prong:
         self.especial.proyectiles.append(proyectil)
 
 class BolaFuego(Prong):
-    def __init__(self, velocidad, esp, mapa, danio):
-        super().__init__(velocidad, esp, mapa, danio)
-        self.dimension = [50, 50]
+    def __init__(self, velocidad, esp, mapa, danio, multiarea):
+        super().__init__(velocidad, esp, mapa, danio, multiarea)
+        self.dimension = [50 *  multiarea, 50 *  multiarea]
         self.icono = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "bolafuego_pronk.png"))
         self.icono = pygame.transform.smoothscale(self.icono, (90, 90))
@@ -209,8 +214,10 @@ class BolaFuego(Prong):
         self.especial.proyectiles.append(proyectil)
 
 class ProngBomba(Prong):
-    def __init__(self, velocidad, esp, mapa, danio):
-        super().__init__(velocidad, esp, mapa, danio)
+    def __init__(self, velocidad, esp, mapa, danio, multiarea):
+        super().__init__(velocidad, esp, mapa, danio, multiarea)
+        self.dimension = [30 * multiarea, 30 * multiarea]
+
 
     def lanzarProyectil(self, dir, pos):
         proyectil = ProyectilBomba(dir, pos, self.speed * 4, self.damage, self.especial, 5, self.dimension, self.mapa)
@@ -221,12 +228,14 @@ class Principal:
         self.costo = 10
         self.radio = 10
         self.damage = 10
+        self.multiDamage = 1
         self.speed = 8
         self.proyectiles = []
-        self.cooldown_time = 0.5  # segundos entre usos
+        self.multiDimensiones = 1
+        self.cooldown_time = 0.3  
         self.cooldown = 0.0
-        self.set = SetLigero(self.damage, self)
-        self.hitbox = [] # se almacena el rectangulo de la hitbox del ataque
+        self.set = SetLigero(self.damage * self.multiDamage, self, self.multiDimensiones)
+        self.hitbox = [] 
 
     def atacar(self, pos, dir, tamano):
         if self.puedeUsar():
@@ -258,11 +267,12 @@ class Principal:
         self.updateHitbox(pos, damage) 
 
 class SetAtaque:
-    def __init__(self, daño, prin):
+    def __init__(self, daño, prin, dimensiones):
         self.actAtaque = 0
         self.damage = daño
         self.ultimoAtaque = 0
         self.principal = prin
+        self.dimensionesMulti = dimensiones
 
     def mk_hitbox(self, dir, tamano, dims, shift_perp = 0, forward_offset=0):
         coseno = math.cos(dir)
@@ -292,7 +302,7 @@ class SetLigero(SetAtaque):
     def __init__(self, daño, prin):
         super().__init__(daño, prin)
         self.intervalo = 1
-        self.tiempo = 0.2
+        self.tiempo = 0.3
         self.damage = daño
 
     def atacar(self, pos, dir, tamano):
@@ -302,8 +312,8 @@ class SetLigero(SetAtaque):
         coseno = math.cos(dir)
         seno = math.sin(dir)
 
-        largo = 200
-        corto = 120
+        largo = 200 * self.dimensionesMulti
+        corto = 120 * self.dimensionesMulti
 
         if abs(coseno) > abs(seno):
             dimensiones = (corto, largo)

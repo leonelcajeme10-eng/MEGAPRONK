@@ -3,7 +3,7 @@ from player import Player
 import math
 import random
 from camara import Camara
-
+from anim import AnimadorMovimiento
 
 class Enemy:
         COLOR = "red"
@@ -13,6 +13,8 @@ class Enemy:
         TAMANO_X = 50
         TAMANO_Y = 50
         EXP = 20 
+        
+        ANIMACION_MOVIMIENTO = None
 
         def __init__(self, camara):
             self.x = 50
@@ -31,8 +33,19 @@ class Enemy:
             self.inmunidad = 60
             self.boton_x = False
             self.boton_y = False
+            self.tiempo_golpe_visual = 0
+            self.duracion_golpe_visual = 160
+            self.ultima_vida = self.vida
+            # Animación
+            self.direccion = "down"
+            self.animador = None
 
-            
+            if self.ANIMACION_MOVIMIENTO is not None:
+                self.animador = AnimadorMovimiento(self.ANIMACION_MOVIMIENTO)
+
+                imagen = self.animador.imagen_actual()
+                self.tamano_x = imagen.get_width()
+                self.tamano_y = imagen.get_height()
             
             self.aparicion_enemigos(camara)
 
@@ -72,7 +85,8 @@ class Enemy:
             if distancia != 0:
                 self.dx /= distancia
                 self.dy /= distancia
-
+                self.actualizar_direccion_animacion() ###
+                
             mov_x = self.dx * self.speed * dt
             mov_y = self.dy * self.speed * dt    
             
@@ -149,22 +163,68 @@ class Enemy:
             self.cooldown_golpe(jugador)
             self.separar_enemigos(enemigos)
 
+            if self.animador is not None:
+                self.animador.update(dt)
+        
+            if self.vida < self.ultima_vida:
+                self.tiempo_golpe_visual = pygame.time.get_ticks()
+                self.ultima_vida = self.vida
+            
             if self.vida <= 0:
                 jugador.exp += self.experiencia
                 enemigos.remove(self)
-            
-
-
+                jugador.kills += 1
         
         def dibujar(self,pantalla,camara):
-            pygame.draw.rect(pantalla,self.color,(self.x - camara.x,self.y - camara.y,self.tamano_x,self.tamano_y))
+            draw_x = self.x - camara.x
+            draw_y = self.y - camara.y
 
+            golpeado = pygame.time.get_ticks() - self.tiempo_golpe_visual < self.duracion_golpe_visual
 
+            if golpeado:
+                draw_x += random.randint(-4, 4)
+                draw_y += random.randint(-4, 4)
 
+            if self.animador is not None:
+                frame = self.animador.imagen_actual()
 
-            
+            if golpeado:
+                frame = frame.copy()
+                frame.fill((255, 80, 80, 0), special_flags=pygame.BLEND_RGBA_ADD)
 
+            pantalla.blit(frame, (draw_x, draw_y))
+            return
 
-            
+            color = self.color
+
+            if golpeado:
+                color = (255, 80, 80)
+
+            pygame.draw.rect(
+            pantalla,
+            color,
+            (
+            draw_x,
+            draw_y,
+            self.tamano_x,
+            self.tamano_y
+            )
+            )
+
+        def actualizar_direccion_animacion(self):
+            if abs(self.dx) > abs(self.dy):
+                if self.dx > 0:
+                    self.direccion = "right"
+                else:
+                    self.direccion = "left"
+            else:
+                if self.dy > 0:
+                    self.direccion = "down"
+                else:
+                    self.direccion = "up"
+
+            if self.animador is not None:
+                self.animador.set_direccion(self.direccion)
+                    
         
 

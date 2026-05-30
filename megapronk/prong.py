@@ -42,12 +42,12 @@ class Especial:
         return True
 
     def eliminarProyectil(self, proyectil):
-        for x in self.proyectiles: 
+        for x in self.proyectiles[:]: 
             if x[0] == proyectil: 
                 self.proyectiles.remove(x)
 
     def updateProyectiles(self, enemigos):
-        for proyectil, tipo in self.proyectiles:
+        for proyectil, tipo in self.proyectiles[:]:
             proyectil.update(enemigos)
 
     def update(self, dt, enemigos):
@@ -245,7 +245,7 @@ class Prong:
     def lanzarProyectil(self, dir, pos):
         proyectil = Proyectil(dir, pos, self.speed * 4, self.damage, self.especial, 5, self.dimension, self.mapa)
         self.asignar_animacion(proyectil) ###
-        self.especial.proyectiles.append(proyectil)
+        self.especial.proyectiles.append([proyectil, "Proyectil"])
         
         
     ### definir animacion del proyectil
@@ -264,7 +264,6 @@ class Prong:
         )
 
         proyectil.rotar_sprite = True
-        self.especial.proyectiles.append([proyectil, "Proyectil"])
 
 class BolaFuego(Prong):
     def __init__(self, velocidad, esp, mapa, danio, multiarea):
@@ -277,10 +276,10 @@ class BolaFuego(Prong):
     def lanzarProyectil(self, dir, pos):
         proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, 1)
         self.asignar_animacion(proyectil) ###
-        self.especial.proyectiles.append(proyectil)
+        self.especial.proyectiles.append([proyectil, "Fuego"])
         proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, -1)
         self.asignar_animacion(proyectil) ###
-        self.especial.proyectiles.append(proyectil)
+        self.especial.proyectiles.append([proyectil, "Fuego"])
         
     #definir animacion del proyectil
     def asignar_animacion(self, proyectil):
@@ -288,11 +287,9 @@ class BolaFuego(Prong):
         proyectil.rotar_sprite = False
 
 class ProngBomba(Prong):
-    def __init__(self, velocidad, esp, mapa, danio):
-        super().__init__(velocidad, esp, mapa, danio)
-        
-        ###
-        self.dimension = [80, 80]
+    def __init__(self, velocidad, esp, mapa, danio, multiarea):
+        super().__init__(velocidad, esp, mapa, danio, multiarea)
+        self.dimension = [30 * multiarea, 30 * multiarea]
 
         self.icono = pygame.image.load(os.path.join(ruta_actual, "assets", "ui", "explosion_pronk.png"))
         self.icono = pygame.transform.smoothscale(self.icono, (135, 135))
@@ -300,7 +297,7 @@ class ProngBomba(Prong):
     def lanzarProyectil(self, dir, pos):
         proyectil = ProyectilBomba(dir, pos, self.speed * 4, self.damage, self.especial, 5, self.dimension, self.mapa)
         self.asignar_animacion(proyectil) ###
-        self.especial.proyectiles.append(proyectil)
+        self.especial.proyectiles.append([proyectil, "Bomba"])
         
     ### definir animacion del proyectil
     def asignar_animacion(self, proyectil):
@@ -312,22 +309,6 @@ class ProngBomba(Prong):
 
         # El proyectil sí rota según la dirección
         proyectil.rotar_sprite = True
-        self.especial.proyectiles.append([proyectil, "Fuego"])
-        # proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, -1)
-        self.especial.proyectiles.append([proyectil, "Fuego"])
-
-class ProngBomba(Prong):
-    def _init_(self, velocidad, esp, mapa, danio, multiarea):
-        super()._init_(velocidad, esp, mapa, danio, multiarea)
-        self.dimension = [30 * multiarea, 30 * multiarea]
-
-        self.icono = pygame.image.load(os.path.join(ruta_actual, "assets", "ui", "explosion_pronk.png"))
-        self.icono = pygame.transform.smoothscale(self.icono, (135, 135))
-
-
-    def lanzarProyectil(self, dir, pos):
-        proyectil = ProyectilBomba(dir, pos, self.speed * 4, self.damage, self.especial, 5, self.dimension, self.mapa)
-        self.especial.proyectiles.append([proyectil, "Bomba"])
 
 class Principal:
     def __init__(self):

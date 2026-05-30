@@ -3,7 +3,7 @@ from player import Player
 import math
 import random
 from camara import Camara
-
+from anim import AnimadorMovimiento
 
 class Enemy:
         COLOR = "red"
@@ -12,6 +12,8 @@ class Enemy:
         DAMAGE = 10
         TAMANO_X = 50
         TAMANO_Y = 50
+        
+        ANIMACION_MOVIMIENTO = None
 
         def __init__(self, camara):
             self.x = 50
@@ -30,7 +32,16 @@ class Enemy:
             self.boton_x = False
             self.boton_y = False
 
-            
+            # Animación
+            self.direccion = "down"
+            self.animador = None
+
+            if self.ANIMACION_MOVIMIENTO is not None:
+                self.animador = AnimadorMovimiento(self.ANIMACION_MOVIMIENTO)
+
+                imagen = self.animador.imagen_actual()
+                self.tamano_x = imagen.get_width()
+                self.tamano_y = imagen.get_height()
             
             self.aparicion_enemigos(camara)
 
@@ -70,7 +81,8 @@ class Enemy:
             if distancia != 0:
                 self.dx /= distancia
                 self.dy /= distancia
-
+                self.actualizar_direccion_animacion() ###
+                
             mov_x = self.dx * self.speed * dt
             mov_y = self.dy * self.speed * dt    
             
@@ -147,8 +159,12 @@ class Enemy:
             self.cooldown_golpe(jugador)
             self.separar_enemigos(enemigos)
 
+            if self.animador is not None:
+                self.animador.update(dt)
+        
             if self.vida <= 0:
                 enemigos.remove(self)
+                
             
 
 
@@ -156,11 +172,47 @@ class Enemy:
         def dibujar(self,pantalla,camara):
             pygame.draw.rect(pantalla,self.color,(self.x - camara.x,self.y - camara.y,self.tamano_x,self.tamano_y))
 
+            if self.animador is not None:
+                imagen = self.animador.imagen_actual()
+
+                pantalla.blit(
+                    imagen,
+                    (
+                        self.x - camara.x,
+                        self.y - camara.y
+                    )
+                )
+
+                return
+
+            pygame.draw.rect(
+                pantalla,
+                self.color,
+                (
+                    self.x - camara.x,
+                    self.y - camara.y,
+                    self.tamano_x,
+                    self.tamano_y
+                )
+            )
 
 
             
 
+        def actualizar_direccion_animacion(self):
+            if abs(self.dx) > abs(self.dy):
+                if self.dx > 0:
+                    self.direccion = "right"
+                else:
+                    self.direccion = "left"
+            else:
+                if self.dy > 0:
+                    self.direccion = "down"
+                else:
+                    self.direccion = "up"
 
-            
+            if self.animador is not None:
+                self.animador.set_direccion(self.direccion)
+                    
         
 

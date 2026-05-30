@@ -180,6 +180,9 @@ class Player:
             self.sonido_herido.play()
 
         self.ultima_vida = self.vida
+
+        if self.exp >= self.exp_max:
+            self.subirNivel()
     
     def dibujar(self,pantalla,camara):
         frame = self.animaciones[self.direccion][self.frame_actual]
@@ -266,3 +269,10 @@ class Player:
             if self.frame_actual >= total_frames:
                 self.frame_actual = 0
             
+
+    def subirNivel(self):
+        self.exp %= self.exp_max
+        self.exp_max += 20
+        self.nivel += 1
+
+

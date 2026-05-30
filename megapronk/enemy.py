@@ -14,6 +14,7 @@ class Enemy:
         TAMANO_Y = 50
         
         ANIMACION_MOVIMIENTO = None
+        EXP = 20 
 
         def __init__(self, camara):
             self.x = 50
@@ -27,6 +28,7 @@ class Enemy:
             self.speed = self.SPEED
             self.damage = self.DAMAGE
             self.color = self.COLOR
+            self.experiencia = self.EXP
 
             self.inmunidad = 60
             self.boton_x = False
@@ -163,6 +165,7 @@ class Enemy:
                 self.animador.update(dt)
         
             if self.vida <= 0:
+                jugador.exp += self.experiencia
                 enemigos.remove(self)
                 
             
@@ -195,6 +198,7 @@ class Enemy:
                     self.tamano_y
                 )
             )
+
 
 
             

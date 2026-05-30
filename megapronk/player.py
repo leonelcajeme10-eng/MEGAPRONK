@@ -164,6 +164,15 @@ class Player:
             prong.update(dt, enemigos)
         center = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
         self.principal.update(dt, center, enemigos)
+        
+        if self.vida < self.ultima_vida:
+            self.tiempo_golpe_visual = pygame.time.get_ticks()
+            self.sonido_herido.play()
+
+        self.ultima_vida = self.vida
+
+        if self.exp >= self.exp_max:
+            self.subirNivel()
     
     def dibujar(self,pantalla,camara):
         frame = self.animaciones[self.direccion][self.frame_actual]
@@ -183,6 +192,7 @@ class Player:
             for x in prong.proyectiles:
                 pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
                 x.dibujar(pantalla, camara) ### Encima para ver si funciona xd
+                pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x[0].rectangulo))
 
         for x in self.principal.hitbox:
             pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
@@ -246,3 +256,10 @@ class Player:
 
             if self.frame_actual >= total_frames:
                 self.frame_actual = 0
+
+    def subirNivel(self):
+        self.exp %= self.exp_max
+        self.exp_max += 20
+        self.nivel += 1
+
+

@@ -168,6 +168,7 @@ class Enemy:
                 jugador.exp += self.experiencia
                 enemigos.remove(self)
                 
+                jugador.kills += 1
             
 
 
@@ -188,16 +189,7 @@ class Enemy:
 
                 return
 
-            pygame.draw.rect(
-                pantalla,
-                self.color,
-                (
-                    self.x - camara.x,
-                    self.y - camara.y,
-                    self.tamano_x,
-                    self.tamano_y
-                )
-            )
+            # pygame.draw.rect(pantalla,self.color,(self.x - camara.x,self.y - camara.y,self.tamano_x,self.tamano_y))
 
 
 

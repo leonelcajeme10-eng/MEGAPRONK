@@ -13,6 +13,7 @@ import ctypes
 ctypes.windll.user32.SetProcessDPIAware()
 from enemigo_mariposa import Mariposa
 from fantasma import Fantasma
+from seleccionar_prongs import SeleccionarProngs
 
 pygame.init()
 pygame.mixer.init()
@@ -33,11 +34,8 @@ tiempo_spawn = 0
 enemigos = []
 pause = PauseMenu(1920, 1080)
 menu = Menu(1920, 1080)
+seleccion = SeleccionarProngs()
 estado = "menu"
-
-jugador.agregarProng(pygame.K_1, BolaFuego)
-jugador.agregarProng(pygame.K_2, Prong)
-jugador.agregarProng(pygame.K_3, ProngBomba)
 
 ejecutando = True
 
@@ -65,7 +63,8 @@ while ejecutando:
                 estado = "menu"
                 pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "menu.ogg"))
                 pygame.mixer.music.play(-1)
-
+        
+    opcion = seleccion.manejar_evento(evento, jugador)
     dt = clock.tick(60) / 1000.0
     
     pause.actualizar(dt)
@@ -99,6 +98,10 @@ while ejecutando:
 
     jugador.update(dt, mapa, camara, enemigos)
     camara.update(jugador, dt, mapa)
+    
+    if jugador.seleccionando_prong:
+        seleccion.abrir()
+        jugador.seleccionando_prong = False
 
     pantalla.fill((255, 255, 255))
     mapa.update(pantalla, camara)
@@ -110,6 +113,7 @@ while ejecutando:
 
     ui.dibujar_hud(pantalla, jugador)
     pause.dibujar(pantalla)
+    seleccion.dibujar(pantalla)
 
     pygame.display.flip()
     

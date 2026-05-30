@@ -2,15 +2,18 @@ import pygame
 import math
 from prong import Prongs, Principal
 from camara import Camara
+import random
+import os
+ruta_actual = os.path.dirname(__file__)
 
 class Player:
     def __init__(self, mapa):
         self.x = 700
         self.y = 700
-        self.vida = 80
+        self.vida = 100
         self.vida_max = 100
-        self.mana = 100
-        self.exp = 20
+        self.mana = 0
+        self.exp = 99
         self.exp_max = 100
         self.nivel = 0
         self.kills = 0
@@ -23,8 +26,12 @@ class Player:
         self.dt = 1
         self.boton_x = False
         self.boton_y = False
+        self.tiempo_golpe_visual = 0
+        self.duracion_golpe_visual = 160
+        self.ultima_vida = self.vida
         self.prong = Prongs(mapa)
         self.principal = Principal()
+        self.seleccionando_prong = False
         
         # Tamaño visual de cada frame del sprite sheet
         self.sprite_ancho = 70
@@ -39,6 +46,10 @@ class Player:
         self.velocidad_idle = 400
         self.velocidad_walk = 120
         self.ultimo_cambio_frame = pygame.time.get_ticks()
+
+        #Sonidos
+        self.sonido_herido = pygame.mixer.Sound(os.path.join(ruta_actual, "assets", "sounds", "hurt.mp3"))
+
 
         self.animaciones = self.cargar_animaciones()
 
@@ -179,14 +190,6 @@ class Player:
 
         draw_x = self.x - camara.x
         draw_y = self.y - camara.y - 20
-
-        pantalla.blit(
-            frame,
-            (
-                int(draw_x),
-                int(draw_y)
-            )
-        )
         
         for prong in self.prong.prongs:
             for x in prong.proyectiles:
@@ -197,6 +200,18 @@ class Player:
         for x in self.principal.hitbox:
             pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
             
+        golpeado = pygame.time.get_ticks() - self.tiempo_golpe_visual < self.duracion_golpe_visual
+        
+        if golpeado:
+            frame = frame.copy()
+            
+            rojo = pygame.Surface(frame.get_size(), pygame.SRCALPHA)
+            rojo.fill((255, 0, 0, 90))
+            frame.fill((255, 80, 80, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            draw_x += random.randint(-4, 4)
+            draw_y += random.randint(-4, 4)
+            
+        pantalla.blit(frame, (int(draw_x), int(draw_y)))
             
     def obtener_tiempo(self):
         minutos = int(self.tiempo) // 60
@@ -256,10 +271,12 @@ class Player:
 
             if self.frame_actual >= total_frames:
                 self.frame_actual = 0
+            
 
     def subirNivel(self):
         self.exp %= self.exp_max
         self.exp_max += 20
         self.nivel += 1
+        self.seleccionando_prong = True
 
 

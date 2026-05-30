@@ -42,10 +42,12 @@ class Especial:
         return True
 
     def eliminarProyectil(self, proyectil):
-        self.proyectiles.remove(proyectil)
+        for x in self.proyectiles: 
+            if x[0] == proyectil: 
+                self.proyectiles.remove(x)
 
     def updateProyectiles(self, enemigos):
-        for proyectil in self.proyectiles:
+        for proyectil, tipo in self.proyectiles:
             proyectil.update(enemigos)
 
     def update(self, dt, enemigos):
@@ -262,6 +264,7 @@ class Prong:
         )
 
         proyectil.rotar_sprite = True
+        self.especial.proyectiles.append([proyectil, "Proyectil"])
 
 class BolaFuego(Prong):
     def __init__(self, velocidad, esp, mapa, danio, multiarea):
@@ -283,6 +286,9 @@ class BolaFuego(Prong):
     def asignar_animacion(self, proyectil):
         proyectil.animador = AnimadorHorizontal(os.path.join(ruta_actual,"assets","images","prong1_spritesheet.png"), columnas=5, escala=1, velocidad_ms=80, loop=True)
         proyectil.rotar_sprite = False
+        self.especial.proyectiles.append([proyectil, "Fuego"])
+        proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, -1)
+        self.especial.proyectiles.append([proyectil, "Fuego"])
 
 class ProngBomba(Prong):
     def __init__(self, velocidad, esp, mapa, danio, multiarea):
@@ -307,6 +313,7 @@ class ProngBomba(Prong):
 
         # El proyectil sí rota según la dirección
         proyectil.rotar_sprite = True
+        self.especial.proyectiles.append([proyectil, "Bomba"])
 
 class Principal:
     def __init__(self):

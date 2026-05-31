@@ -2,7 +2,8 @@ import pygame
 import math 
 import os
 import random
-from anim import AnimadorHorizontal
+from anim import AnimadorHorizontal, AnimadorSlash
+from audio import play_sfx
 ruta_actual = os.path.dirname(__file__)
 
 class Prongs:
@@ -113,6 +114,8 @@ class Proyectil:
                     enemigo.vida -= self.damage
                     self.enemigosGolpeados.append(enemigo)
                     
+                    play_sfx("enemy_hit", volumen=0.5, cooldown_ms=35)###
+                    
                     
     def dibujar(self, pantalla, camara):
         if self.animador is not None:
@@ -204,6 +207,7 @@ class ProyectilBomba(Proyectil):
                 self.especial.eliminarProyectil(self)
 
     def CrearExplosion(self):
+        play_sfx("bomb_explosion", volumen=0.8, cooldown_ms=100) ###
         self.dimension = [self.dimension[0] * 5, self.dimension[1] * 5]
         self.estado = 1
         self.temporizadorexplosion = pygame.time.get_ticks()
@@ -251,24 +255,14 @@ class Prong:
         self.icono = pygame.transform.smoothscale(self.icono, (130, 130))
     
     def lanzarProyectil(self, dir, pos):
+        play_sfx("prong_shoot", volumen=0.55, cooldown_ms=60) ###
         damage = self.damage * (self.multiCrit if  self.probCrit >= random.randint(1, 100) else 1)
         proyectil = Proyectil(dir, pos, self.speed * 4, damage, self.especial, 5, self.dimension, self.mapa)
         self.asignar_animacion(proyectil) ###
         
     ### definir animacion del proyectil
     def asignar_animacion(self, proyectil):
-        proyectil.animador = AnimadorHorizontal(
-            os.path.join(
-                ruta_actual,
-                "assets",
-                "images",
-                "prong2_spritesheet.png"
-            ),
-            columnas=5,
-            escala=1,
-            velocidad_ms=80,
-            loop=True
-        )
+        proyectil.animador = AnimadorHorizontal(os.path.join(ruta_actual,"assets","images","prong2_spritesheet.png"),columnas=5,escala=1,velocidad_ms=80,loop=True)
 
         proyectil.rotar_sprite = True
         self.especial.proyectiles.append([proyectil, "Proyectil"])
@@ -283,6 +277,7 @@ class BolaFuego(Prong):
         self.icono = pygame.transform.smoothscale(self.icono, (135, 135))
 
     def lanzarProyectil(self, dir, pos):
+        play_sfx("fireball", volumen=3, cooldown_ms=80)
         damage = self.damage * (self.multiCrit if  self.probCrit >= random.randint(1, 100) else 1)
         proyectil = ProyectilOscilante(dir, pos, self.speed, damage, self.especial, 5, self.dimension, self.mapa, 1)
         self.asignar_animacion(proyectil) ###
@@ -306,6 +301,7 @@ class ProngBomba(Prong):
         self.icono = pygame.transform.smoothscale(self.icono, (135, 135))
 
     def lanzarProyectil(self, dir, pos):
+        play_sfx("bomb_shoot", volumen=0.65, cooldown_ms=100) ###
         damage = self.damage * (self.multiCrit if  self.probCrit >= random.randint(1, 100) else 1)
         proyectil = ProyectilBomba(dir, pos, self.speed * 4, damage, self.especial, 5, self.dimension, self.mapa)
         self.asignar_animacion(proyectil) ###
@@ -336,9 +332,11 @@ class Principal:
         self.cooldown = 0.0
         self.set = SetLigero(self.damage * self.multiDamage, self, self.multiDimensiones)
         self.hitbox = [] 
+        self.animador_slash = AnimadorSlash(os.path.join(ruta_actual,"assets","images","slash_spritesheet.png"),columnas=3,filas=4,escala=1,orden_filas=["down", "up", "left", "right"])
 
     def atacar(self, pos, dir, tamano):
         if self.puedeUsar():
+            play_sfx("slash", volumen=0.6, cooldown_ms=80)###
             self.set.atacar(pos, dir, tamano)
             self.usar()
 
@@ -400,6 +398,21 @@ class SetAtaque:
                 [posicion[0] + fx * (bd + fo) + px * sp, posicion[1] + fy * (bd + fo) + py * sp])
         return expr
     
+    def obtener_direccion_texto(self, dir):
+        grado = math.degrees(dir) % 360
+
+        if grado >= 45 and grado < 135:
+            return "down"
+
+        elif grado >= 135 and grado < 225:
+            return "left"
+
+        elif grado >= 225 and grado < 315:
+            return "up"
+
+        else:
+            return "right"
+    
 class SetLigero(SetAtaque):
     def __init__(self, daño, prin, dimensiones):
         super().__init__(daño, prin, dimensiones)
@@ -423,29 +436,30 @@ class SetLigero(SetAtaque):
             dimensiones = (corto, largo)
         else:
             dimensiones = (largo, corto)
-
+            
+        direccion_texto = self.obtener_direccion_texto(dir)
         match self.actAtaque:
             case 0:
                 expr = self.mk_hitbox(dir, tamano, dimensiones, largo / 4)  
-                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage,direccion_texto,0)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
 
             case 1:
                 expr = self.mk_hitbox(dir, tamano, dimensiones, - largo / 4)
-                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage,direccion_texto,1)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
 
             case 2:
                 expr = self.mk_hitbox(dir, tamano, dimensiones, largo / 4)
-                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage,direccion_texto,0)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
 
             case 3:
                 expr = self.mk_hitbox(dir, tamano, dimensiones, - largo / 4)
-                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage,direccion_texto,1)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
 
@@ -456,7 +470,7 @@ class SetLigero(SetAtaque):
                     final_dims = [largo + largo / 4, corto + corto]
 
                 expr = self.mk_hitbox(dir, tamano, final_dims)
-                hitbox = Hitbox(expr, pos, final_dims, self.tiempo, self.principal, damage)
+                hitbox = Hitbox(expr, pos, final_dims, self.tiempo, self.principal, damage,direccion_texto,2)
 
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque = 0
@@ -466,7 +480,7 @@ class SetLigero(SetAtaque):
         self.ultimoAtaque = pygame.time.get_ticks()
 
 class Hitbox():
-    def __init__(self, exp, pos, dim, tiempo, prin, danio):
+    def __init__(self, exp, pos, dim, tiempo, prin, danio, direccion="right", fase_sprite=0):
         self.expresion = exp
         self.posicion = self.operar(self.expresion, pos)
         self.dimension = dim
@@ -476,7 +490,8 @@ class Hitbox():
         self.principal = prin
         self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
         self.enemigosGolpeados = []
-        
+        self.direccion = direccion
+        self.fase_sprite = fase_sprite
         
 
     def update(self, pos, enemigos):
@@ -498,3 +513,12 @@ class Hitbox():
                 if self.rectangulo.colliderect(enemigo_rect):
                     enemigo.vida -= self.damage
                     self.enemigosGolpeados.append(enemigo)
+                    play_sfx("enemy_hit", volumen=0.5, cooldown_ms=35)
+
+    def dibujar(self, pantalla, camara):
+        imagen = self.principal.animador_slash.obtener_frame(self.direccion,self.fase_sprite)
+        imagen = pygame.transform.scale(imagen,(int(self.dimension[0]),int(self.dimension[1])))
+
+        rect = imagen.get_rect(center=(self.posicion[0] - camara.x,self.posicion[1] - camara.y))
+
+        pantalla.blit(imagen, rect)

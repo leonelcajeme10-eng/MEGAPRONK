@@ -2,6 +2,7 @@ import pygame
 import math
 from prong import Prongs, Principal
 from camara import Camara
+from audio import play_sfx
 import random
 import os
 ruta_actual = os.path.dirname(__file__)
@@ -201,8 +202,8 @@ class Player:
                 x[0].dibujar(pantalla, camara)
 
         for x in self.principal.hitbox:
-            pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
-            
+            # pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
+            x.dibujar(pantalla, camara)
         golpeado = pygame.time.get_ticks() - self.tiempo_golpe_visual < self.duracion_golpe_visual
         
         if golpeado:
@@ -293,6 +294,7 @@ class Player:
 
 
     def subirNivel(self):
+        play_sfx("level_up", volumen=0.8, cooldown_ms=300)
         self.exp %= self.exp_max
         self.exp_max += 20
         self.nivel += 1

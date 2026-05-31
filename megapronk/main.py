@@ -6,6 +6,7 @@ from camara import Camara
 from prong import Prong, BolaFuego, ProngBomba
 from ui import UI
 from pausa import PauseMenu
+from audio import cargar_sonidos
 from menu import Menu
 import os 
 ruta_actual = os.path.dirname(__file__)
@@ -18,6 +19,7 @@ from pantalla_final import PantallaFinal
 
 pygame.init()
 pygame.mixer.init()
+pygame.mixer.set_num_channels(32)
 pantalla = pygame.display.set_mode((1920,1080))
 pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "menu.ogg"))
 pygame.mixer.music.set_volume(0.8)
@@ -37,7 +39,7 @@ pause = PauseMenu(1920, 1080)
 menu = Menu(1920, 1080)
 estado = "menu"
 proyectiles = []
-
+cargar_sonidos(ruta_actual)
 ejecutando = True
 
 while ejecutando:

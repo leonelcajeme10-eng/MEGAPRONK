@@ -33,7 +33,7 @@ class Player:
         self.ultima_vida = self.vida
         self.prong = Prongs(mapa)
         self.principal = Principal()
-        self.megapronk = 49
+        self.megapronk = 0
         self.temporizador = 0
         self.megapronkBandera = 0
         self.seleccionando_prong = False
@@ -276,8 +276,8 @@ class Player:
                 self.frame_actual = 0
                 
     def activarMegaPronk(self):
-        if self.megapronk >= 100 and self.megapronkBandera == 0:
-            self.megapronk -= 100 
+        if self.megapronk >= 50 and self.megapronkBandera == 0:
+            self.megapronk -= 50 
             self.megapronkBandera = 1
             self.temporizador = pygame.time.get_ticks()
             for prong in self.prong.prongs: 

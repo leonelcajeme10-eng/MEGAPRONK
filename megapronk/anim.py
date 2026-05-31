@@ -155,3 +155,25 @@ class AnimadorHorizontal:
 
     def imagen_actual(self):
         return self.frames[self.frame_actual]
+    
+    
+class AnimadorSlash:
+    def __init__(self, ruta, columnas=3, filas=4, escala=1, orden_filas=None):
+        if orden_filas is None:
+            orden_filas = ["down", "up", "left", "right"]
+
+        self.animaciones = cargar_spritesheet(ruta=ruta,columnas=columnas,filas=filas,escala=escala,orden_filas=orden_filas)
+
+    def obtener_frame(self, direccion, fase):
+        if direccion not in self.animaciones:
+            direccion = "down"
+
+        frames = self.animaciones[direccion]
+
+        if fase < 0:
+            fase = 0
+
+        if fase >= len(frames):
+            fase = len(frames) - 1
+
+        return frames[fase]

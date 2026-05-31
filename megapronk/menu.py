@@ -26,6 +26,9 @@ class Menu:
         self.borde_menu = pygame.transform.smoothscale(
             self.borde_menu, (705, 450)
         )
+        self.volumen = 0.8
+        self.arrastrando_volumen = False
+        self.barra_volumen = pygame.Rect(ancho - 260,alto - 60,200,10)
 
         self.particulas = []
         for i in range(80):
@@ -45,6 +48,20 @@ class Menu:
 
             if self.botones["salir"].collidepoint(evento.pos):
                 return "salir"
+            
+        if evento.type == pygame.MOUSEBUTTONDOWN:        
+            if self.barra_volumen.collidepoint(evento.pos):
+                self.arrastrando_volumen = True
+
+        if evento.type == pygame.MOUSEBUTTONUP:
+            self.arrastrando_volumen = False
+
+        if evento.type == pygame.MOUSEMOTION and self.arrastrando_volumen:
+            mouse_x = evento.pos[0]
+            self.volumen = (mouse_x - self.barra_volumen.x) / self.barra_volumen.width
+            self.volumen = max(0, min(1, self.volumen))
+        
+        pygame.mixer.music.set_volume(self.volumen)
 
         return None
 
@@ -100,6 +117,50 @@ class Menu:
         pantalla.blit(self.borde_menu, (borde_x, borde_y))
         self.dibujar_boton(pantalla, self.botones["jugar"], "JUGAR")
         self.dibujar_boton(pantalla, self.botones["salir"], "SALIR")
+        
         pantalla.blit(self.logo, (self.ancho // 2 - 310, self.alto//2 - 500 + logo_y_anim) )
+        icono = self.font_boton.render("♪", True, (255, 210, 80))
+        
+        pantalla.blit(icono, (self.ancho - 180, self.alto - 115))
+        texto_vol = self.font_boton.render(
+            f"{int(self.volumen * 100)}%",
+            True,
+            (255, 240, 200)
+        )
+
+        pantalla.blit(
+            texto_vol,
+            (self.ancho - 360, self.alto - 85)
+        )
+
+        pygame.draw.rect(
+            pantalla,
+            (40, 30, 20),
+            self.barra_volumen,
+            border_radius=5
+        )
+
+        pygame.draw.rect(
+            pantalla,
+            (255, 210, 80),
+            (
+                self.barra_volumen.x,
+                self.barra_volumen.y,
+                int(self.barra_volumen.width * self.volumen),
+                self.barra_volumen.height
+            ),
+            border_radius=5
+        )
+
+        pygame.draw.circle(
+            pantalla,
+            (255, 240, 200),
+            (
+                self.barra_volumen.x +
+                int(self.barra_volumen.width * self.volumen),
+                self.barra_volumen.centery
+            ),
+            10
+        )
         
         

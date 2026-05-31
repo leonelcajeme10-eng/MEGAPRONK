@@ -41,6 +41,7 @@ estado = "menu"
 proyectiles = []
 cargar_sonidos(ruta_actual)
 ejecutando = True
+musica_megapronk = False 
 
 while ejecutando:
     accion = None
@@ -60,8 +61,8 @@ while ejecutando:
                 pause.pausado = False
                 seleccion = SeleccionarProngs(jugador)
                 estado = "juego"
-                pygame.mixer.music.stop()
-
+                pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "gameplay.ogg"))
+                pygame.mixer.music.play(-1)    
 
             elif accion == "salir":
                 ejecutando = False
@@ -76,6 +77,8 @@ while ejecutando:
                 
             if jugador.vida <= 0:
                 estado = "final"
+                pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "final.ogg"))
+                pygame.mixer.music.play(-1)
                 
         elif estado == "seleccion":
             seleccion.manejar_evento(evento)
@@ -94,6 +97,16 @@ while ejecutando:
     dt = clock.tick(60) / 1000.0
          
     pause.actualizar(dt)
+    
+    if estado == "juego":
+        if jugador.megapronkBandera and not musica_megapronk:
+            pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "megapronk.ogg"))
+            pygame.mixer.music.play(-1)
+            musica_megapronk = True
+        elif not jugador.megapronkBandera and musica_megapronk:
+            pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "gameplay.ogg"))
+            pygame.mixer.music.play(-1)
+            musica_megapronk = False
     
     if estado == "menu":
         menu.actualizar(dt)

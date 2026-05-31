@@ -11,7 +11,9 @@ class Mariposa(Enemy):
 
     def __init__(self, camara):
         super().__init__(camara)
-        
+
+
+   
     ANIMACION_MOVIMIENTO = {
         "ruta": "assets/images/bfly_spritesheet.png",
         "columnas": 4,

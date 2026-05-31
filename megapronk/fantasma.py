@@ -99,6 +99,10 @@ class Fantasma(Enemy):
         if self.animador is not None:
             self.animador.update(dt)
 
+        if self.vida < self.ultima_vida:
+            self.tiempo_golpe_visual = pygame.time.get_ticks()
+            self.ultima_vida = self.vida
+
         if self.vida <= 0:
             jugador.exp += self.experiencia
             jugador.megapronk += 1

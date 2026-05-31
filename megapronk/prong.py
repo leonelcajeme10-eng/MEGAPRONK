@@ -27,6 +27,7 @@ class Especial:
         self.tecla = tecla
         self.Prong = prong(velocidad, self, mapa, self.damage * self.multiDamage, self.multiArea)
         self.mapa = mapa
+        self.nivel = 0
 
     def puedeUsar(self):
         return self.cooldown <= 0.0
@@ -228,6 +229,8 @@ class ProyectilBomba(Proyectil):
                     self.enemigosGolpeados.append(enemigo)
 
 class Prong:
+    icono = pygame.image.load(os.path.join(ruta_actual, "assets", "ui", "disparo_pronk.png"))
+    icono = pygame.transform.smoothscale(icono, (180, 180))
     def __init__(self, velocidad, esp, mapa, danio, multiarea):
         self.dimensionOriginal = [80, 80]
         self.dimension = [self.dimensionOriginal[0] * multiarea, self.dimensionOriginal[1] * multiarea]
@@ -236,8 +239,14 @@ class Prong:
         self.especial = esp
         self.mapa = mapa
         self.damage = danio
+<<<<<<< Updated upstream
         self.icono = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "disparo_pronk.png"))
+=======
+        self.probCrit = 10
+        self.multiCrit = 1.2
+        self.icono = pygame.image.load(os.path.join(ruta_actual, "assets", "ui", "disparo_pronk.png"))
+>>>>>>> Stashed changes
         self.icono = pygame.transform.smoothscale(self.icono, (130, 130))
     
     def lanzarProyectil(self, dir, pos):
@@ -264,11 +273,12 @@ class Prong:
         proyectil.rotar_sprite = True
 
 class BolaFuego(Prong):
+    icono = pygame.image.load(os.path.join(ruta_actual, "assets", "ui", "bolafuego_pronk.png"))
+    icono = pygame.transform.smoothscale(icono, (190, 190))
     def __init__(self, velocidad, esp, mapa, danio, multiarea):
         super().__init__(velocidad, esp, mapa, danio, multiarea)
         self.dimension = [50 *  multiarea, 50 *  multiarea]
-        self.icono = pygame.image.load(
-        os.path.join(ruta_actual, "assets", "ui", "bolafuego_pronk.png"))
+        self.icono = pygame.image.load(os.path.join(ruta_actual, "assets", "ui", "bolafuego_pronk.png"))
         self.icono = pygame.transform.smoothscale(self.icono, (135, 135))
 
     def lanzarProyectil(self, dir, pos):
@@ -285,6 +295,8 @@ class BolaFuego(Prong):
         proyectil.rotar_sprite = False
 
 class ProngBomba(Prong):
+    icono = pygame.image.load(os.path.join(ruta_actual, "assets", "ui", "explosion_pronk.png"))
+    icono = pygame.transform.smoothscale(icono, (185, 185))
     def __init__(self, velocidad, esp, mapa, danio, multiarea):
         super().__init__(velocidad, esp, mapa, danio, multiarea)
         self.dimension = [30 * multiarea, 30 * multiarea]

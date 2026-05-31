@@ -52,6 +52,7 @@ class Enemy:
 
         def aparicion_enemigos(self,camara):
 
+            margen_spawn = 100
             borde_izq = camara.x 
             borde_derecha = camara.x + camara.ancho
             borde_arriba = camara.y 
@@ -60,16 +61,16 @@ class Enemy:
             lado = random.choice(["izq","dere","arriba","abajo"])
 
             if lado == "izq":
-                self.x = borde_izq - 100
+                self.x = borde_izq - self.tamano_x - margen_spawn
                 self.y = random.randint(int(borde_arriba), int(borde_abajo))
             if lado == "dere":
-                self.x = borde_derecha + 100
+                self.x = borde_derecha + margen_spawn
                 self.y = random.randint(int(borde_arriba), int(borde_abajo))
             if lado == "arriba":
-                self.y = borde_arriba - 100
+                self.y = borde_arriba - self.tamano_y - margen_spawn
                 self.x = random.randint(int(borde_izq), int(borde_derecha))
             if lado == "abajo":
-                self.y = borde_abajo + 100
+                self.y = borde_abajo + margen_spawn
                 self.x = random.randint(int(borde_izq), int(borde_derecha))
 
 
@@ -80,13 +81,13 @@ class Enemy:
             self.dx = jugador.x - self.x
             self.dy = jugador.y - self.y
 
-            distancia = (self.dx**2 + self.dy**2) ** 0.5
+            self.distancia = (self.dx**2 + self.dy**2) ** 0.5
+            
 
-            if distancia != 0:
-                self.dx /= distancia
-                self.dy /= distancia
+            if self.distancia != 0:
+                self.dx /= self.distancia
+                self.dy /= self.distancia
                 self.actualizar_direccion_animacion() ###
-                
             mov_x = self.dx * self.speed * dt
             mov_y = self.dy * self.speed * dt    
             
@@ -135,7 +136,7 @@ class Enemy:
             if jugador_rect.colliderect(enemigo_rect) and self.inmunidad <= 0:
                 self.inmunidad = 60
                 jugador.vida -= self.damage
-                
+    
 
         def separar_enemigos(self,enemigos):
             
@@ -153,11 +154,11 @@ class Enemy:
                             self.y -= distancia_y * 0.05
 
                             otro_enemigo.x += distancia_y * 0.05
-                
+
 
     
             
-        def update(self,jugador,dt,mapa,camara,enemigos):
+        def update(self,jugador,dt,mapa,camara,enemigos,proyectiles):
             
             self.movimiento(jugador,dt,mapa.paredes)
             self.cooldown_golpe(jugador)
@@ -173,6 +174,9 @@ class Enemy:
             if self.vida <= 0:
                 jugador.exp += self.experiencia
                 enemigos.remove(self)
+
+
+
                 jugador.kills += 1
         
         def dibujar(self,pantalla,camara):
@@ -187,13 +191,12 @@ class Enemy:
 
             if self.animador is not None:
                 frame = self.animador.imagen_actual()
+                if golpeado:
+                    frame = frame.copy()
+                    frame.fill((255, 80, 80, 0), special_flags=pygame.BLEND_RGBA_ADD)
 
-            if golpeado:
-                frame = frame.copy()
-                frame.fill((255, 80, 80, 0), special_flags=pygame.BLEND_RGBA_ADD)
-
-            pantalla.blit(frame, (draw_x, draw_y))
-            return
+                pantalla.blit(frame, (draw_x, draw_y))
+                return
 
             color = self.color
 
@@ -201,14 +204,14 @@ class Enemy:
                 color = (255, 80, 80)
 
             pygame.draw.rect(
-            pantalla,
-            color,
-            (
-            draw_x,
-            draw_y,
-            self.tamano_x,
-            self.tamano_y
-            )
+                pantalla,
+                color,
+                (
+                    draw_x,
+                    draw_y,
+                    self.tamano_x,
+                    self.tamano_y
+                )
             )
 
         def actualizar_direccion_animacion(self):

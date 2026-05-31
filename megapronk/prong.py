@@ -246,14 +246,7 @@ class Prong:
         self.damage = danio
         self.probCrit = 10
         self.multiCrit = 1.2
-<<<<<<< Updated upstream
-        self.icono = pygame.image.load(
-        os.path.join(ruta_actual, "assets", "ui", "disparo_pronk.png"))
-=======
-        self.probCrit = 10
-        self.multiCrit = 1.2
         self.icono = pygame.image.load(os.path.join(ruta_actual, "assets", "ui", "disparo_pronk.png"))
->>>>>>> Stashed changes
         self.icono = pygame.transform.smoothscale(self.icono, (130, 130))
     
     def lanzarProyectil(self, dir, pos):

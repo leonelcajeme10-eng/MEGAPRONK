@@ -70,7 +70,6 @@ while ejecutando:
             if not seleccion.activo:
                 estado = "juego"
         
-    seleccion.manejar_evento(evento)
     dt = clock.tick(60) / 1000.0
     
     pause.actualizar(dt)

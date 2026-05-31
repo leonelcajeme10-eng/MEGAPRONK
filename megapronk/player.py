@@ -15,7 +15,7 @@ class Player:
         self.vida = 100
         self.vida_max = 100
         self.mana = 0
-        self.exp = 100
+        self.exp = 0
         self.exp_max = 100
         self.nivel = 0
         self.kills = 0

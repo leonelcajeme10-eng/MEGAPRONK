@@ -18,27 +18,6 @@ class SeleccionarProngs:
         self.alto = 1080
         self.cont = 0
         self.slot_actual = 0
-<<<<<<< Updated upstream
-        self.teclas = [pygame.K_1, pygame.K_2, pygame.K_3]
-        self.tecla = self.teclas[self.slot_actual]
-        self.jugador = jugador
-        self.bancoOpciones = self.crearBanco()
-        self.opciones = [self.bancoOpciones[0], self.bancoOpciones[1], self.bancoOpciones[2]]
-
-    def crearBanco(self):
-        banco = []
-        banco.append(OpcionProng(BolaFuego, self.jugador, "Bola De fuego", "agrega prong"))
-        banco.append(OpcionProng(Prong, self.jugador, "Flecha", "agrega prong"))
-        banco.append(OpcionProng(ProngBomba, self.jugador, "Bomba", "agrega prong"))
-        banco.append(opcionJugador(self.jugador, aumentarVelocidad, 2, "Jugador", "Aumentar Velocidad"))
-        banco.append(OpcionSet(self.jugador.principal, damageAumentoSet, 10, "Ataque Principal", "Aumentar Daño"))
-        banco.append(OpcionSet(self.jugador.principal, aumentoProbCritSet, 5, "Ataque Principal", "Probabilidad Crit"))
-        banco.append(OpcionSet(self.jugador.principal, aumentoCritSet, 0.2, "Ataque Principal", "Daño Crit"))
-        return banco
-
-    def abrir(self):
-        self.activo = True
-=======
         self.teclas = [pygame.K_1, pygame.K_2, pygame.K_3]
         self.tecla = self.teclas[self.slot_actual]
         self.jugador = jugador
@@ -72,7 +51,6 @@ class SeleccionarProngs:
     def abrir(self):
         self.activo = True
         self.tiempo_apertura = pygame.time.get_ticks()
->>>>>>> Stashed changes
 
     def cerrar(self):
         self.activo = False
@@ -133,11 +111,7 @@ class SeleccionarProngs:
         overlay.fill((0, 0, 0, 180))
         pantalla.blit(overlay, (0, 0))
 
-<<<<<<< Updated upstream
-        titulo = self.font_titulo.render("Selecciona una carta", True, (230, 200, 120))
-=======
         titulo = self.font_titulo.render("Selecciona un Pronk", True, (230, 200, 120))
->>>>>>> Stashed changes
         pantalla.blit(titulo, titulo.get_rect(center=(self.ancho // 2, 180)))
 
         self.cartas = []
@@ -145,20 +119,6 @@ class SeleccionarProngs:
         x_inicial = self.ancho // 2 - 575
         y = 320
 
-<<<<<<< Updated upstream
-        for i, nombre in enumerate(self.opciones):
-            rect = pygame.Rect(x_inicial + i * 340, y, 280, 380)
-            self.cartas.append(rect)
-
-            nombre = opcion.nombre
-            descripcion = opcion.descripcion
-
-            pygame.draw.rect(pantalla, (20, 18, 30), rect, border_radius=25)
-            pygame.draw.rect(pantalla, (210, 160, 60), rect, 4, border_radius=25)
-
-            texto = self.font_texto.render(nombre, True, (255, 240, 180))
-            pantalla.blit(texto, texto.get_rect(center=(rect.centerx, rect.centery)))
-=======
         for i, opcion in enumerate(self.opciones):
             rect = pygame.Rect(x_inicial + i * 420, y, 400, 500)
             self.cartas.append(rect)
@@ -272,4 +232,3 @@ class OpcionSet:
 
     def ejecutar(self):
         self.funcion(self.principal, self.principal.set, self.aumento)
->>>>>>> Stashed changes

@@ -49,6 +49,11 @@ class Player:
         self.estado = "idle"
         self.frame_actual = 0
         self.velocidad_idle = 400
+        
+        self.atacando = False
+        self.frame_ataque = 0
+        self.velocidad_attack = 70
+        self.ultimo_cambio_frame_ataque = pygame.time.get_ticks()
 
 
         self.velocidad_walk = 120
@@ -58,6 +63,7 @@ class Player:
 
 
         self.animaciones = self.cargar_animaciones()
+        self.animaciones_ataque = self.cargar_animaciones_ataque()
 
     def input(self,camara):
         keys = pygame.key.get_pressed()
@@ -117,15 +123,22 @@ class Player:
 
         if grado >= 45 and grado < 135:
             dir = math.pi / 2
+            direccion_texto = "down"
         elif grado >= 135 and grado < 225:
             dir = math.pi
+            direccion_texto = "left"
         elif grado >= 225 and grado < 315:
             dir = 3 * math.pi / 2
+            direccion_texto = "up"
         else:
             dir = 0
+            direccion_texto = "right"
 
         center = [self.x + 25, self.y + 25]
-        self.principal.atacar(center, dir, [self.tamano_x, self.tamano_y])
+        ataque_realizado = self.principal.atacar(center,dir,[self.tamano_x, self.tamano_y])
+
+        if ataque_realizado:
+            self.iniciar_animacion_ataque(direccion_texto)
 
     def movimiento(self,mapa_rect):
         if self.dy != 0 and self.dx != 0:
@@ -192,7 +205,10 @@ class Player:
             self.subirNivel()
     
     def dibujar(self,pantalla,camara):
-        frame = self.animaciones[self.direccion][self.frame_actual]
+        if self.atacando:
+            frame = self.animaciones_ataque[self.direccion][self.frame_ataque]
+        else:
+            frame = self.animaciones[self.direccion][self.frame_actual]
 
         draw_x = self.x - camara.x
         draw_y = self.y - camara.y - 20
@@ -270,6 +286,17 @@ class Player:
     def actualizar_animacion(self, dt):
         tiempo_actual = pygame.time.get_ticks()
 
+        if self.atacando:
+            if tiempo_actual - self.ultimo_cambio_frame_ataque >= self.velocidad_attack:
+                self.ultimo_cambio_frame_ataque = tiempo_actual
+                self.frame_ataque += 1
+
+                if self.frame_ataque >= 3:
+                    self.frame_ataque = 0
+                    self.atacando = False
+
+            return
+
         if self.estado == "idle":
             velocidad_actual = self.velocidad_idle
             total_frames = 2   # Solo usa frame 0 y 1
@@ -307,3 +334,37 @@ class Player:
         self.exp_max += 20
         self.nivel += 1
         self.seleccionando_prong = True
+
+    def iniciar_animacion_ataque(self, direccion):
+        self.atacando = True
+        self.direccion = direccion
+        self.frame_ataque = 0
+        self.ultimo_cambio_frame_ataque = pygame.time.get_ticks()
+        
+    def cargar_animaciones_ataque(self):
+        animaciones = {
+            "down": [],
+            "up": [],
+            "left": [],
+            "right": []
+        }
+
+        hoja = pygame.image.load(os.path.join(ruta_actual,"assets","images","playerslash_spritesheet.png")).convert_alpha()
+
+        frame_ancho = 90
+        frame_alto = 100
+
+        columnas = 3
+
+        direcciones = ["down", "up", "left", "right"]
+
+        for fila, direccion in enumerate(direcciones):
+            for columna in range(columnas):
+                x = columna * frame_ancho
+                y = fila * frame_alto
+
+                frame = hoja.subsurface(pygame.Rect(x,y,frame_ancho,frame_alto)).copy()
+
+                animaciones[direccion].append(frame)
+
+        return animaciones

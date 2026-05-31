@@ -339,6 +339,9 @@ class Principal:
             play_sfx("slash", volumen=0.6, cooldown_ms=80)###
             self.set.atacar(pos, dir, tamano)
             self.usar()
+            return True
+
+        return False
 
     def puedeUsar(self):
         return self.cooldown <= 0.0

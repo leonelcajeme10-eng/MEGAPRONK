@@ -1,6 +1,7 @@
 import pygame
 import os
 from prong import Prong, BolaFuego, ProngBomba
+import math
 
 ruta_actual = os.path.dirname(__file__)
 
@@ -49,6 +50,8 @@ class UI:
         self.bolafuego_pronk_original = pygame.image.load(
             os.path.join(ruta_actual, "assets", "ui", "bolafuego_pronk.png")
         ).convert_alpha()
+        
+        self.megapronk = pygame.image.load(os.path.join(ruta_actual, "assets", "ui", "megapronk.png")).convert_alpha()
 
         self.escala_actual = None
         self.preparar_escala(1)
@@ -127,6 +130,12 @@ class UI:
             self.bolafuego_pronk_original,
             80,
             80
+        )
+        
+        self.megapronk = self.escalar_imagen(
+            self.megapronk,
+            230,
+            230
         )
 
     def actualizar_escala_si_cambio(self, pantalla):
@@ -288,6 +297,50 @@ class UI:
 
         texto_jugador = self.font.render(f"LV {jugador.nivel_ataque}",True,(255, 240, 180))
 
+        if jugador.kills >= 50:
+            jugador.megapronk = 1
+
+        if(jugador.megapronk):
+            pantalla.blit(self.megapronk, (x+1450, y+30))
+        else:
+            porcentaje_megapronk = max(0, 1 - (jugador.kills / 50))
+
+            pantalla.blit(self.megapronk, (x + 400, y + 30))
+
+            pygame.draw.circle(
+                pantalla,
+                (0, 0, 0),
+                (x + 1565, y + 145),
+                128,
+                18
+            )
+
+            pygame.draw.arc(
+                pantalla,
+                (120, 40, 180),
+                (x + 1437, y + 17, 256, 256),
+                -math.pi / 2,
+                -math.pi / 2 + porcentaje_megapronk * 2 * math.pi,
+                18
+            )
+
+            pygame.draw.arc(
+                pantalla,
+                (220, 120, 255),
+                (x + 1437, y + 17, 256, 256),
+                -math.pi / 2,
+                -math.pi / 2 + porcentaje_megapronk * 2 * math.pi,
+                5
+            )
+
+            pygame.draw.circle(
+                pantalla,
+                (255, 180, 255),
+                (x + 1565, y + 17),
+                6
+            )
+            
+            
         pantalla.blit(texto_jugador, (x - 130, y + 210))
 
         for i, prong in enumerate(jugador.prong.prongs):

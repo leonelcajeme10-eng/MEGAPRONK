@@ -14,6 +14,7 @@ ctypes.windll.user32.SetProcessDPIAware()
 from enemigo_mariposa import Mariposa
 from fantasma import Fantasma,Proyectil_enemigo
 from seleccionar_prongs import SeleccionarProngs
+import ramdom
 
 pygame.init()
 pygame.mixer.init()
@@ -38,6 +39,7 @@ seleccion = SeleccionarProngs(jugador)
 estado = "menu"
 proyectiles = []
 
+tiempo_de_fantasma = 0
 
 
 ejecutando = True
@@ -97,10 +99,14 @@ while ejecutando:
     camara.update(jugador, dt, mapa)
 
     tiempo_spawn += dt
+    tiempo_de_fantasma += dt
+
     if tiempo_spawn >= 1:
-        enemigos.append(Fantasma(camara))
         enemigos.append(Mariposa(camara))
         tiempo_spawn = 0
+    if tiempo_de_fantasma >= 3:
+        enemigos.append(Fantasma(camara))
+        tiempo_de_fantasma = 0
 
     jugador.update(dt, mapa, camara, enemigos)
     camara.update(jugador, dt, mapa)

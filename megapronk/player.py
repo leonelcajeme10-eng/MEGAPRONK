@@ -22,7 +22,7 @@ class Player:
         self.dy = 0
         self.tamano_x = 60
         self.tamano_y = 80
-        self.speed = 16
+        self.speed = 8
         self.dt = 1
         self.boton_x = False
         self.boton_y = False

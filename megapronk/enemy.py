@@ -191,13 +191,12 @@ class Enemy:
 
             if self.animador is not None:
                 frame = self.animador.imagen_actual()
+                if golpeado:
+                    frame = frame.copy()
+                    frame.fill((255, 80, 80, 0), special_flags=pygame.BLEND_RGBA_ADD)
 
-            if golpeado:
-                frame = frame.copy()
-                frame.fill((255, 80, 80, 0), special_flags=pygame.BLEND_RGBA_ADD)
-
-            pantalla.blit(frame, (draw_x, draw_y))
-            return
+                pantalla.blit(frame, (draw_x, draw_y))
+                return
 
             color = self.color
 
@@ -205,14 +204,14 @@ class Enemy:
                 color = (255, 80, 80)
 
             pygame.draw.rect(
-            pantalla,
-            color,
-            (
-            draw_x,
-            draw_y,
-            self.tamano_x,
-            self.tamano_y
-            )
+                pantalla,
+                color,
+                (
+                    draw_x,
+                    draw_y,
+                    self.tamano_x,
+                    self.tamano_y
+                )
             )
 
         def actualizar_direccion_animacion(self):

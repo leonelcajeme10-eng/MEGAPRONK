@@ -10,6 +10,15 @@ class Fantasma(Enemy):
     TAMANO_X = 50
     TAMANO_Y = 50
     EXP = 30
+    ANIMACION_MOVIMIENTO = {
+        "ruta": "assets/images/ghost_spritesheet.png",
+        "columnas": 4,
+        "filas": 4,
+        "escala": 1,
+        "velocidad": 0.12,
+        "orden_filas": ["up", "down", "left", "right"]
+    }
+
     def __init__(self, camara):
         super().__init__(camara)
         self.pararse = False
@@ -47,6 +56,7 @@ class Fantasma(Enemy):
             if self.distancia != 0:
                 self.dx /= self.distancia
                 self.dy /= self.distancia
+                self.actualizar_direccion_animacion()
 
 
             if self.distancia > 400:
@@ -85,6 +95,9 @@ class Fantasma(Enemy):
         self.movimiento(jugador,dt,mapa.paredes)
         self.cooldown_golpe(jugador,proyectiles,mapa.paredes)
         self.separar_enemigos(enemigos)
+
+        if self.animador is not None:
+            self.animador.update(dt)
 
         if self.vida <= 0:
             enemigos.remove(self)
@@ -143,13 +156,3 @@ class Proyectil_enemigo:
         self.y += math.sin(self.dir) * self.velocidad
         self.colision_jugador(jugador,camara,proyectiles)
         self.colisiones_pared(mapa.paredes,proyectiles,camara)
-        
-        
-    ANIMACION_MOVIMIENTO = {
-    "ruta": "assets/images/ghost_spritesheet.png",
-    "columnas": 4,
-    "filas": 4,
-    "escala": 1,
-    "velocidad": 0.12,
-    "orden_filas": ["up", "down", "left", "right"]
-}

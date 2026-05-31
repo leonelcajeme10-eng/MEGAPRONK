@@ -174,9 +174,6 @@ class Enemy:
             if self.vida <= 0:
                 jugador.exp += self.experiencia
                 enemigos.remove(self)
-
-
-
                 jugador.kills += 1
         
         def dibujar(self,pantalla,camara):

@@ -9,7 +9,6 @@ class Menu:
     def __init__(self, ancho, alto):
         self.ancho = ancho
         self.alto = alto
-
         self.font_titulo = pygame.font.SysFont("Georgia", 90)
         self.font_boton = pygame.font.SysFont("Georgia", 45)
         self.fondo = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "fondo_menu.png")).convert()
@@ -39,6 +38,7 @@ class Menu:
         ])
 
     def manejar_evento(self, evento):
+        
         if evento.type == pygame.MOUSEBUTTONDOWN:
             if self.botones["jugar"].collidepoint(evento.pos):
                 return "jugar"

@@ -31,12 +31,13 @@ class Especial:
         self.Prong = prong(velocidad, self, mapa, self.damage * self.multiDamage, self.multiArea)
         self.mapa = mapa
         self.nivel = 0
+        self.megapronk = 0
 
     def puedeUsar(self):
         return self.cooldown <= 0.0
 
     def usar(self):
-        self.cooldown = self.cooldown_time
+        self.cooldown = self.cooldown_time if self.megapronk == 0 else 0.2
 
     def nuevoProyectil(self, dir, pos):
         if not self.puedeUsar():

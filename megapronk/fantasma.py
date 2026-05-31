@@ -105,8 +105,9 @@ class Fantasma(Enemy):
 
         if self.vida <= 0:
             jugador.exp += self.experiencia
-            jugador.kills += 1
+            jugador.megapronk += 1
             enemigos.remove(self)
+            jugador.kills += 1
             
 
 class Proyectil_enemigo:
@@ -162,3 +163,4 @@ class Proyectil_enemigo:
         self.y += math.sin(self.dir) * self.velocidad
         self.colision_jugador(jugador,camara,proyectiles)
         self.colisiones_pared(mapa.paredes,proyectiles,camara)
+        

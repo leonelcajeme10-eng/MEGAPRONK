@@ -1,7 +1,10 @@
 import pygame
 from enemy import Enemy
-
+from anim import AnimadorHorizontal
+import os
 import math
+ruta_actual = os.path.dirname(__file__)
+
 class Fantasma(Enemy):
     COLOR = "white"
     SPEED = 100
@@ -119,9 +122,21 @@ class Proyectil_enemigo:
         self.velocidad = velocidad
         self.tamano = tamano
         self.tiempo_vida = 2.0
-        
+        self.animador = AnimadorHorizontal(os.path.join(ruta_actual,"assets","images","esmegma_spritesheet.png"),columnas=3,escala=0.1,velocidad_ms=100,loop=True)
+
+        self.rotar_sprite = False
 
     def dibujar(self, pantalla, camara):
+        if self.animador is not None:
+            imagen = self.animador.imagen_actual()
+            
+        if self.rotar_sprite:
+            imagen = pygame.transform.rotate(imagen,-math.degrees(self.dir))
+            
+        rect = imagen.get_rect(center=(self.x - camara.x,self.y - camara.y))
+        pantalla.blit(imagen, rect)
+        return
+        
         proyectil_rect = pygame.Rect(self.x - camara.x,self.y - camara.y,self.tamano,self.tamano)
         pygame.draw.rect(pantalla,"yellow",proyectil_rect)
 
@@ -158,7 +173,9 @@ class Proyectil_enemigo:
         
         if self.desaparecer_bala(dt,proyectiles):
             return
-        
+        if self.animador is not None:
+            self.animador.update()
+            
         self.x += math.cos(self.dir) * self.velocidad
         self.y += math.sin(self.dir) * self.velocidad
         self.colision_jugador(jugador,camara,proyectiles)

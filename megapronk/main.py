@@ -133,15 +133,14 @@ while ejecutando:
         pygame.display.flip()
         continue
 
-
-    jugador.update(dt, mapa, camara, enemigos)
-    camara.update(jugador, dt, mapa)
-
     tiempo_spawn += dt
     if tiempo_spawn >= 1:
         enemigos.append(Fantasma(camara))
         enemigos.append(Mariposa(camara))
         tiempo_spawn = 0
+
+    jugador.update(dt, mapa, camara, enemigos)
+    camara.update(jugador, dt, mapa)
     
     if jugador.seleccionando_prong:
         seleccion.abrir()

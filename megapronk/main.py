@@ -66,8 +66,13 @@ while ejecutando:
                 estado = "menu"
                 pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "menu.ogg"))
                 pygame.mixer.music.play(-1)
+                
+        elif estado == "seleccion":
+            seleccion.manejar_evento(evento)
+
+            if not seleccion.activo:
+                estado = "juego"
         
-    seleccion.manejar_evento(evento)
     dt = clock.tick(60) / 1000.0
     
     pause.actualizar(dt)
@@ -91,19 +96,31 @@ while ejecutando:
 
         pygame.display.flip()
         continue
+    
+    if estado == "seleccion":
+        pantalla.fill((255, 255, 255))
+        mapa.update(pantalla, camara)
+        jugador.dibujar(pantalla, camara)
+
+        for enemigo in enemigos:
+            enemigo.dibujar(pantalla, camara)
+
+        ui.dibujar_hud(pantalla, jugador)
+        seleccion.dibujar(pantalla)
+
+        pygame.display.flip()
+        continue
 
     tiempo_spawn += dt
     if tiempo_spawn >= 1:
         enemigos.append(Fantasma(camara))
         enemigos.append(Mariposa(camara))
         tiempo_spawn = 0
-
-    jugador.update(dt, mapa, camara, enemigos)
-    camara.update(jugador, dt, mapa)
     
     if jugador.seleccionando_prong:
         seleccion.abrir()
         jugador.seleccionando_prong = False
+        estado = "seleccion"
 
     pantalla.fill((255, 255, 255))
     mapa.update(pantalla, camara)

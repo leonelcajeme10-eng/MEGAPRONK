@@ -7,13 +7,15 @@ import os
 ruta_actual = os.path.dirname(__file__)
 
 class Player:
+    icono = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "icono_jugador.png"))
+    icono = pygame.transform.smoothscale(icono, (185, 185))
     def __init__(self, mapa):
         self.x = 700
         self.y = 700
         self.vida = 100
         self.vida_max = 100
         self.mana = 0
-        self.exp = 100
+        self.exp = 0
         self.exp_max = 100
         self.nivel = 0
         self.kills = 0
@@ -32,6 +34,7 @@ class Player:
         self.prong = Prongs(mapa)
         self.principal = Principal()
         self.seleccionando_prong = False
+        self.nivel_ataque = 1 # para los ataques, no total
         
         # Tamaño visual de cada frame del sprite sheet
         self.sprite_ancho = 70

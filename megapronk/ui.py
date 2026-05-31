@@ -284,6 +284,11 @@ class UI:
         y = pantalla.get_height() - self.s(310)
 
         pantalla.blit(self.pronks_ui, (x, y))
+        pantalla.blit(jugador.icono, (x-185, y+30))
+
+        texto_jugador = self.font.render(f"LV {jugador.nivel_ataque}",True,(255, 240, 180))
+
+        pantalla.blit(texto_jugador, (x - 130, y + 210))
 
         for i, prong in enumerate(jugador.prong.prongs):
             slot_x = x + self.s(33) + i * self.s(165)
@@ -317,6 +322,10 @@ class UI:
             )
 
             pantalla.blit(icono, icono_rect)
+            
+            texto_lvl = self.font.render(f"LV {prong.nivel}", True, (255, 240, 180))
+            texto_rect = texto_lvl.get_rect(center=(slot_x + slot_ancho // 2 + 10, slot_y + slot_alto + self.s(35) +25))
+            pantalla.blit(texto_lvl, texto_rect)
 
             if prong.cooldown > 0:
                 porcentaje_cooldown = prong.cooldown / prong.cooldown_time
@@ -325,26 +334,11 @@ class UI:
                 alto_cd = int(slot_alto * porcentaje_cooldown)
 
                 if alto_cd > 0:
-                    overlay = pygame.Surface(
-                        (slot_ancho, alto_cd),
-                        pygame.SRCALPHA
-                    )
+                    overlay = pygame.Surface((slot_ancho, alto_cd),pygame.SRCALPHA)
 
                     overlay.fill((0, 0, 0, 150))
 
                     if i == 0:
-                        pantalla.blit(
-                            overlay,
-                            (
-                                slot_x + self.s(9),
-                                slot_y + slot_alto - alto_cd
-                            )
-                        )
+                        pantalla.blit(overlay,(slot_x + self.s(9),slot_y + slot_alto - alto_cd))
                     else:
-                        pantalla.blit(
-                            overlay,
-                            (
-                                slot_x,
-                                slot_y + slot_alto - alto_cd
-                            )
-                        )
+                        pantalla.blit(overlay,(slot_x,slot_y + slot_alto - alto_cd))

@@ -1,24 +1,25 @@
-def danioBaseAumento(esp, prong, aumento):
+def damageAumento(esp, prong, aumento):
     esp.damage += aumento
-    prong.damage += esp.damage * esp.multiDamage
+    prong.damage += aumento 
 
-def danioMulti(esp, prong, multi):
-    esp.multiDamage *= multi
-    prong.damage += esp.damage * esp.multiDamage
-
-def prongAumentoArea(esp, prong, aumento):
-    esp.multiArea += aumento
-    prong.dimensiones = [prong.dimensionOriginal[0] * esp.multiArea, prong.dimensionOriginal[1] * esp.multiarea]
-
-def prongMultiArea(esp, prong, multi):
-    esp.multiArea *= multi
-    prong.dimensiones = [prong.dimensionOriginal[0] * esp.multiArea, prong.dimensionOriginal[1] * esp.multiarea]
+def damageAumentoSet(prin, set, aumento):
+    prin.damage += aumento
+    set.damage += aumento 
 
 def disminuirCooldown(esp, prong, decremento):
     esp.cooldown_time -= decremento
 
-def prongAumentoArea(esp, set, aumento):
-    esp.multiArea += aumento
+def aumentarVelocidad(jugador, aumento):
+    jugador.speed += aumento
 
-def prongAumentoArea(esp, set, multi):
-    esp.multiArea *= multi
+def aumentoProbCrit(esp , prong, aumento):
+    prong.probCrit += aumento
+
+def aumentoCrit(esp , prong, aumento):
+    prong.multiCrit += aumento
+
+def aumentoProbCritSet(prin , set, aumento):
+    set.probCrit += aumento
+
+def aumentoCritSet(prin , set, aumento):
+    set.multiCrit += aumento

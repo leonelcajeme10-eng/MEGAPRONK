@@ -15,7 +15,7 @@ class Player:
         self.vida = 100
         self.vida_max = 100
         self.mana = 0
-        self.exp = 99
+        self.exp = 100
         self.exp_max = 100
         self.nivel = 0
         self.kills = 0
@@ -24,7 +24,7 @@ class Player:
         self.dy = 0
         self.tamano_x = 60
         self.tamano_y = 80
-        self.speed = 16
+        self.speed = 8
         self.dt = 1
         self.boton_x = False
         self.boton_y = False
@@ -44,13 +44,12 @@ class Player:
         self.direccion = "down"
         self.estado = "idle"
         self.frame_actual = 0
-
-        # Milisegundos entre cada frame
         self.velocidad_idle = 400
+
+
         self.velocidad_walk = 120
         self.ultimo_cambio_frame = pygame.time.get_ticks()
 
-        #Sonidos
         self.sonido_herido = pygame.mixer.Sound(os.path.join(ruta_actual, "assets", "sounds", "hurt.mp3"))
 
 
@@ -95,7 +94,7 @@ class Player:
             self.ataquePrincipal(camara)
 
     def agregarProng(self, tecla, especial):
-        self.prong.asignarProng(tecla, especial)
+        return self.prong.asignarProng(tecla, especial)
 
     def lanzarEspecial(self, camara, especial):
         mouse = pygame.mouse.get_pos()
@@ -196,8 +195,7 @@ class Player:
         
         for prong in self.prong.prongs:
             for x in prong.proyectiles:
-                pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
-                x.dibujar(pantalla, camara) ### Encima para ver si funciona xd
+                x[0].dibujar(pantalla, camara)
 
         for x in self.principal.hitbox:
             pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
@@ -280,5 +278,3 @@ class Player:
         self.exp_max += 20
         self.nivel += 1
         self.seleccionando_prong = True
-
-

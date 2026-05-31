@@ -40,6 +40,7 @@ menu = Menu(1920, 1080)
 estado = "menu"
 proyectiles = []
 cargar_sonidos(ruta_actual)
+tiempo_de_fantasma = 0
 ejecutando = True
 
 while ejecutando:
@@ -92,7 +93,7 @@ while ejecutando:
                 pygame.mixer.music.play(-1)
             
     dt = clock.tick(60) / 1000.0
-         
+
     pause.actualizar(dt)
     
     if estado == "menu":
@@ -135,11 +136,17 @@ while ejecutando:
         pygame.display.flip()
         continue
 
+
     tiempo_spawn += dt
+    tiempo_de_fantasma += dt
+
     if tiempo_spawn >= 1:
-        enemigos.append(Fantasma(camara))
         enemigos.append(Mariposa(camara))
         tiempo_spawn = 0
+    if tiempo_de_fantasma >= 3:
+        enemigos.append(Fantasma(camara))
+        tiempo_de_fantasma = 0
+
 
     jugador.update(dt, mapa, camara, enemigos)
     camara.update(jugador, dt, mapa)

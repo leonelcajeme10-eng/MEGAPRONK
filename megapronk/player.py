@@ -34,7 +34,7 @@ class Player:
         self.ultima_vida = self.vida
         self.prong = Prongs(mapa)
         self.principal = Principal()
-        self.megapronk = 0
+        self.megapronk = 40
         self.temporizador = 0
         self.megapronkBandera = 0
         self.seleccionando_prong = False

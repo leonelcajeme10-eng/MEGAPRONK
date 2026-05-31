@@ -1,6 +1,7 @@
 import pygame
 import os
 from prong import Prong, BolaFuego, ProngBomba
+import math
 
 ruta_actual = os.path.dirname(__file__)
 
@@ -49,6 +50,11 @@ class UI:
         self.bolafuego_pronk_original = pygame.image.load(
             os.path.join(ruta_actual, "assets", "ui", "bolafuego_pronk.png")
         ).convert_alpha()
+        
+        self.megapronk = pygame.image.load(os.path.join(ruta_actual, "assets", "ui", "megapronk.png")).convert_alpha()
+        self.logo = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "logo.png")).convert_alpha()
+        self.megapronk_animando = False
+        self.megapronk_tiempo_inicio = 0
 
         self.escala_actual = None
         self.preparar_escala(1)
@@ -128,6 +134,14 @@ class UI:
             80,
             80
         )
+        
+        self.megapronk = self.escalar_imagen(
+            self.megapronk,
+            230,
+            230
+        )
+        
+        self.logo = self.escalar_imagen(self.logo, 625, 425)
 
     def actualizar_escala_si_cambio(self, pantalla):
         nueva_escala = self.calcular_escala(pantalla)
@@ -287,7 +301,63 @@ class UI:
         pantalla.blit(jugador.icono, (x-185, y+30))
 
         texto_jugador = self.font.render(f"LV {jugador.nivel_ataque}",True,(255, 240, 180))
+        
+        if jugador.megapronkBandera and not self.megapronk_animando:
+            self.megapronk_animando = True
+            self.megapronk_tiempo_inicio = pygame.time.get_ticks()
 
+        if jugador.megapronkBandera:
+            pantalla.blit(self.megapronk, (x + 1450, y + 30))
+            
+            tiempo = pygame.time.get_ticks() - self.megapronk_tiempo_inicio
+
+            if self.megapronk_animando and tiempo < 1200:
+                escala = 1 + math.sin(tiempo * 0.015) * 0.08
+                alpha = max(0, 255 - int(tiempo * 0.18))
+
+                logo_animado = pygame.transform.smoothscale(
+                    self.logo,
+                    (int(625 * escala), int(425 * escala))
+                )
+
+                logo_animado.set_alpha(alpha)
+
+                rect_logo = logo_animado.get_rect(
+                    center=(pantalla.get_width() // 2, pantalla.get_height() // 2)
+                )
+                pantalla.blit(logo_animado, rect_logo)
+
+
+            pygame.draw.circle(pantalla, (255, 220, 80), (x + 1565, y + 145), 98, 5)
+            pygame.draw.circle(pantalla, (180, 80, 255), (x + 1565, y + 145), 108, 3)
+
+            brillo = int(8 + math.sin(pygame.time.get_ticks() * 0.01) * 4)
+            pygame.draw.circle(pantalla, (255, 255, 180), (x + 1565, y + 145), 112, brillo)
+        else:
+            porcentaje_megapronk = max(0, 1 - (jugador.megapronk / 50))
+
+            pantalla.blit(self.megapronk, (x + 1450, y + 30))
+            
+            cooldown = pygame.Surface((230, 230), pygame.SRCALPHA)
+
+            pygame.draw.circle(
+                cooldown,
+                (0, 0, 0, 170),
+                (115, 115),
+                95
+            )
+
+            pantalla.blit(cooldown, (x + 1450, y + 30))
+
+            pygame.draw.arc(
+                pantalla,
+                (255, 220, 80),
+                (x + 1462, y + 42, 206, 206),
+                -math.pi / 2,
+                -math.pi / 2 + (1 - porcentaje_megapronk) * 2 * math.pi,
+                12
+            )
+            
         pantalla.blit(texto_jugador, (x - 130, y + 210))
 
         for i, prong in enumerate(jugador.prong.prongs):

@@ -34,6 +34,9 @@ class Player:
         self.ultima_vida = self.vida
         self.prong = Prongs(mapa)
         self.principal = Principal()
+        self.megapronk = 0
+        self.temporizador = 0
+        self.megapronkBandera = 0
         self.seleccionando_prong = False
         self.nivel_ataque = 1 # para los ataques, no total
         
@@ -184,7 +187,7 @@ class Player:
             self.sonido_herido.play()
 
         self.ultima_vida = self.vida
-
+        self.activarMegaPronk()
         if self.exp >= self.exp_max:
             self.subirNivel()
     
@@ -273,7 +276,22 @@ class Player:
             if self.frame_actual >= total_frames:
                 self.frame_actual = 0
                 
-            
+    def activarMegaPronk(self):
+        if self.megapronk >= 50 and self.megapronkBandera == 0:
+            self.megapronk -= 50 
+            self.megapronkBandera = 1
+            self.temporizador = pygame.time.get_ticks()
+            for prong in self.prong.prongs: 
+                prong.megapronk = 1
+
+        if self.megapronkBandera == 1:
+            if pygame.time.get_ticks() - self.temporizador >= 20 * 1000:
+                for prong in self.prong.prongs: 
+                    prong.megapronk = 0 
+                self.megapronkBandera = 0
+                self.temporizador = 0
+    
+
 
     def subirNivel(self):
         play_sfx("level_up", volumen=0.8, cooldown_ms=300)

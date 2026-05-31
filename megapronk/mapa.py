@@ -124,14 +124,11 @@ class Mapa:
                     tipo = self.tiles[fila][columna]
                     pantalla.blit(self.suelo_base, (x - camara.x, y - camara.y))
                     
-            for decoracion in self.decoraciones:
-                pantalla.blit(
-                decoracion["imagen"],
-                        (
-                            decoracion["x"] - camara.x,
-                            decoracion["y"] - camara.y
-                        )
-                    )
+        for decoracion in self.decoraciones:
+            pantalla.blit(
+            decoracion["imagen"],
+            (decoracion["x"] - camara.x,
+            decoracion["y"] - camara.y))
 
     def update(self,pantalla,camara):
         self.dibujar_mapa(pantalla,camara)
@@ -157,12 +154,27 @@ class Mapa:
                         x = x_tile + self.size // 2 - rect.width // 2
                         y = y_tile + self.size // 2 - rect.height // 2
 
-                        self.decoraciones.append({
+                        nuevo_rect = pygame.Rect(x, y, rect.width, rect.height)
+
+
+                        if not self.decoracion_choca(nuevo_rect, margen=60):
+                            self.decoraciones.append({
                             "imagen": imagen,
                             "x": x,
-                            "y": y
+                            "y": y,
+                            "rect": nuevo_rect
                         })     
 
+    def decoracion_choca(self, nuevo_rect, margen=40):
+            rect_con_margen = nuevo_rect.inflate(margen, margen)
+
+            for decoracion in self.decoraciones:
+                rect_existente = decoracion["rect"].inflate(margen, margen)
+
+                if rect_con_margen.colliderect(rect_existente):
+                    return True
+
+            return False
 
 
         

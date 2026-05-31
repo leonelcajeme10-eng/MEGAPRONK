@@ -92,10 +92,6 @@ while ejecutando:
         pygame.display.flip()
         continue
 
-
-    jugador.update(dt, mapa, camara, enemigos)
-    camara.update(jugador, dt, mapa)
-
     tiempo_spawn += dt
     if tiempo_spawn >= 1:
         enemigos.append(Fantasma(camara))

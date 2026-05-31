@@ -173,6 +173,7 @@ class Enemy:
             
             if self.vida <= 0:
                 jugador.exp += self.experiencia
+                jugador.megapronk += 1
                 enemigos.remove(self)
                 jugador.kills += 1
         

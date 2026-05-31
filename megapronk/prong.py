@@ -1,6 +1,8 @@
 import pygame
 import math 
 import os
+import random
+from anim import AnimadorHorizontal
 ruta_actual = os.path.dirname(__file__)
 
 class Prongs:
@@ -9,18 +11,24 @@ class Prongs:
         self.mapa = mapa
 
     def asignarProng(self, tecla, prong, velocidad = 4):
-        self.prongs.append(Especial(tecla, prong, velocidad,  self.mapa))
+        especial = Especial(tecla, prong, velocidad,  self.mapa)
+        self.prongs.append(especial)
+        return especial
+
+    def aplicarCambio(self, funcion, especial, magnitud):
+        funcion(especial, especial.prong, magnitud)
     
 class Especial:
     def __init__(self, tecla, prong, velocidad, mapa):
-        self.costo = 10
         self.speed = velocidad
         self.damage = 10
+        self.multiDamage = 1
+        self.multiArea = 1
         self.proyectiles = []
-        self.cooldown_time = 0.5
+        self.cooldown_time = 5
         self.cooldown = 0.0
         self.tecla = tecla
-        self.Prong = prong(velocidad, self, mapa, self.damage)
+        self.Prong = prong(velocidad, self, mapa, self.damage * self.multiDamage, self.multiArea)
         self.mapa = mapa
 
     def puedeUsar(self):
@@ -35,12 +43,14 @@ class Especial:
         self.usar()
         self.Prong.lanzarProyectil(dir, pos)
         return True
-
+    
     def eliminarProyectil(self, proyectil):
-        self.proyectiles.remove(proyectil)
+        for x in self.proyectiles: 
+            if x[0] == proyectil:
+                self.proyectiles.remove(x)
 
     def updateProyectiles(self, enemigos):
-        for proyectil in self.proyectiles:
+        for proyectil, tipo in self.proyectiles:
             proyectil.update(enemigos)
 
     def update(self, dt, enemigos):
@@ -63,12 +73,18 @@ class Proyectil:
         self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
         self.mapa = mapa
         self.enemigosGolpeados = []
+        
+        #
+        self.animador = None
+        self.rotar_sprite = False
 
     def CalcularPos(self):
         self.posicion[0] += math.cos(self.dirreccion) * self.speed
         self.posicion[1] += math.sin(self.dirreccion) * self.speed
 
     def update(self, enemigos):
+        if self.animador is not None:
+            self.animador.update()
         self.CalcularPos()
         self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
         
@@ -94,6 +110,33 @@ class Proyectil:
                 if self.rectangulo.colliderect(enemigo_rect):
                     enemigo.vida -= self.damage
                     self.enemigosGolpeados.append(enemigo)
+                    
+                    
+    def dibujar(self, pantalla, camara):
+        if self.animador is not None:
+            imagen = self.animador.imagen_actual()
+
+            if self.rotar_sprite:
+                imagen = pygame.transform.rotate(
+                    imagen,
+                    -math.degrees(self.dirreccion)
+                )
+
+            rect = imagen.get_rect(
+                center=(
+                    self.posicion[0] - camara.x,
+                    self.posicion[1] - camara.y
+                )
+            )
+
+            pantalla.blit(imagen, rect)
+            return
+
+        pygame.draw.rect(
+            pantalla,
+            "blue",
+            camara.aplicar_rect(self.rectangulo)
+        )
                 
                 
 class ProyectilOscilante(Proyectil):
@@ -126,9 +169,16 @@ class ProyectilBomba(Proyectil):
         self.tiempoVida = 1
         self.estado = 0
         self.temporizadorexplosion = 0
+        ###
+        self.tiempoExplosion = 0.16  # 3 frames para .5 segundos
+        self.animacion_proyectil = None
+        self.animacion_explosion = None
+
 
     def update(self, enemigos):
-        
+        if self.animador is not None: ###
+            self.animador.update()
+            
         if self.estado == 0:
             self.CalcularPos()
             self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
@@ -148,15 +198,19 @@ class ProyectilBomba(Proyectil):
             
             self.colisionExplosion(enemigos)
 
-            if pygame.time.get_ticks() - self.temporizadorexplosion > 0.2 * 1000:
+            if pygame.time.get_ticks() - self.temporizadorexplosion > 0.5 * 1000:
                 self.especial.eliminarProyectil(self)
 
     def CrearExplosion(self):
-        self.dimension = [150, 150]
+        self.dimension = [self.dimension[0] * 5, self.dimension[1] * 5]
         self.estado = 1
         self.temporizadorexplosion = pygame.time.get_ticks()
         self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
-    
+        
+        if self.animacion_explosion is not None: ###
+            self.animador = AnimadorHorizontal(self.animacion_explosion,columnas=3,escala=1,velocidad_ms=100,loop=False)
+        self.rotar_sprite = False # No rota
+        
     def colisionParedes(self):
         for pared in self.mapa.paredes:
                 if self.rectangulo.colliderect(pared):
@@ -179,54 +233,103 @@ class ProyectilBomba(Proyectil):
                     self.enemigosGolpeados.append(enemigo)
 
 class Prong:
-    def __init__(self, velocidad, esp, mapa, danio):
-        self.dimension = [80, 80]
+    def __init__(self, velocidad, esp, mapa, danio, multiarea):
+        self.dimensionOriginal = [80, 80]
+        self.dimension = [self.dimensionOriginal[0] * multiarea, self.dimensionOriginal[1] * multiarea]
         self.speed = velocidad
         self.tiempoVida = 5
         self.especial = esp
         self.mapa = mapa
         self.damage = danio
+        self.probCrit = 10
+        self.multiCrit = 1.2
         self.icono = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "disparo_pronk.png"))
         self.icono = pygame.transform.smoothscale(self.icono, (130, 130))
     
     def lanzarProyectil(self, dir, pos):
-        proyectil = Proyectil(dir, pos, self.speed * 4, self.damage, self.especial, 5, self.dimension, self.mapa)
-        self.especial.proyectiles.append(proyectil)
+        damage = self.damage * (self.multiCrit if  self.probCrit >= random.randint(1, 100) else 1)
+        proyectil = Proyectil(dir, pos, self.speed * 4, damage, self.especial, 5, self.dimension, self.mapa)
+        self.asignar_animacion(proyectil) ###
+        
+    ### definir animacion del proyectil
+    def asignar_animacion(self, proyectil):
+        proyectil.animador = AnimadorHorizontal(
+            os.path.join(
+                ruta_actual,
+                "assets",
+                "images",
+                "prong2_spritesheet.png"
+            ),
+            columnas=5,
+            escala=1,
+            velocidad_ms=80,
+            loop=True
+        )
+
+        proyectil.rotar_sprite = True
+        self.especial.proyectiles.append([proyectil, "Proyectil"])
 
 class BolaFuego(Prong):
-    def __init__(self, velocidad, esp, mapa, danio):
-        super().__init__(velocidad, esp, mapa, danio)
-        self.dimension = [50, 50]
+    def __init__(self, velocidad, esp, mapa, danio, multiarea):
+        super().__init__(velocidad, esp, mapa, danio, multiarea)
+        self.dimension = [50 *  multiarea, 50 *  multiarea]
         self.icono = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "bolafuego_pronk.png"))
         self.icono = pygame.transform.smoothscale(self.icono, (135, 135))
 
     def lanzarProyectil(self, dir, pos):
-        proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, 1)
-        self.especial.proyectiles.append(proyectil)
-        proyectil = ProyectilOscilante(dir, pos, self.speed, self.damage, self.especial, 5, self.dimension, self.mapa, -1)
-        self.especial.proyectiles.append(proyectil)
+        damage = self.damage * (self.multiCrit if  self.probCrit >= random.randint(1, 100) else 1)
+        proyectil = ProyectilOscilante(dir, pos, self.speed, damage, self.especial, 5, self.dimension, self.mapa, 1)
+        self.asignar_animacion(proyectil) ###
+        proyectil = ProyectilOscilante(dir, pos, self.speed, damage, self.especial, 5, self.dimension, self.mapa, -1)
+        self.asignar_animacion(proyectil) ###
+        
+    #definir animacion del proyectil
+    def asignar_animacion(self, proyectil):
+        proyectil.animador = AnimadorHorizontal(os.path.join(ruta_actual,"assets","images","prong1_spritesheet.png"), columnas=5, escala=1, velocidad_ms=80, loop=True)
+        proyectil.rotar_sprite = False
+        self.especial.proyectiles.append([proyectil, "Fuego"])
 
 class ProngBomba(Prong):
-    def __init__(self, velocidad, esp, mapa, danio):
-        super().__init__(velocidad, esp, mapa, danio)
+    def __init__(self, velocidad, esp, mapa, danio, multiarea):
+        super().__init__(velocidad, esp, mapa, danio, multiarea)
+        self.dimension = [30 * multiarea, 30 * multiarea]
+
+        self.icono = pygame.image.load(os.path.join(ruta_actual, "assets", "ui", "explosion_pronk.png"))
+        self.icono = pygame.transform.smoothscale(self.icono, (135, 135))
 
     def lanzarProyectil(self, dir, pos):
-        proyectil = ProyectilBomba(dir, pos, self.speed * 4, self.damage, self.especial, 5, self.dimension, self.mapa)
-        self.especial.proyectiles.append(proyectil)
+        damage = self.damage * (self.multiCrit if  self.probCrit >= random.randint(1, 100) else 1)
+        proyectil = ProyectilBomba(dir, pos, self.speed * 4, damage, self.especial, 5, self.dimension, self.mapa)
+        self.asignar_animacion(proyectil) ###
+        self.especial.proyectiles.append([proyectil, "omba"])
+        
+    ### definir animacion del proyectil
+    def asignar_animacion(self, proyectil):
+        proyectil.animacion_proyectil = os.path.join(ruta_actual,"assets","images","prong3_spritesheet.png")
+
+        proyectil.animacion_explosion = os.path.join(ruta_actual,"assets","images","prong3_spritesheet1.png")
+
+        proyectil.animador = AnimadorHorizontal(proyectil.animacion_proyectil,columnas=5,escala=1,velocidad_ms=80,loop=True)
+
+        # El proyectil sí rota según la dirección
+        proyectil.rotar_sprite = True
+        self.especial.proyectiles.append([proyectil, "Bomba"])
 
 class Principal:
     def __init__(self):
         self.costo = 10
         self.radio = 10
-        self.damage = 10
+        self.damage = 20
+        self.multiDamage = 1
         self.speed = 8
         self.proyectiles = []
-        self.cooldown_time = 0.5  # segundos entre usos
+        self.multiDimensiones = 1
+        self.cooldown_time = 0.3  
         self.cooldown = 0.0
-        self.set = SetLigero(self.damage, self)
-        self.hitbox = [] # se almacena el rectangulo de la hitbox del ataque
+        self.set = SetLigero(self.damage * self.multiDamage, self, self.multiDimensiones)
+        self.hitbox = [] 
 
     def atacar(self, pos, dir, tamano):
         if self.puedeUsar():
@@ -258,11 +361,14 @@ class Principal:
         self.updateHitbox(pos, damage) 
 
 class SetAtaque:
-    def __init__(self, daño, prin):
+    def __init__(self, daño, prin, dimensiones):
         self.actAtaque = 0
         self.damage = daño
+        self.probCrit = 10
+        self.multiCrit = 1.2
         self.ultimoAtaque = 0
         self.principal = prin
+        self.dimensionesMulti = dimensiones
 
     def mk_hitbox(self, dir, tamano, dims, shift_perp = 0, forward_offset=0):
         coseno = math.cos(dir)
@@ -289,10 +395,10 @@ class SetAtaque:
         return expr
     
 class SetLigero(SetAtaque):
-    def __init__(self, daño, prin):
-        super().__init__(daño, prin)
+    def __init__(self, daño, prin, dimensiones):
+        super().__init__(daño, prin, dimensiones)
         self.intervalo = 1
-        self.tiempo = 0.2
+        self.tiempo = 0.3
         self.damage = daño
 
     def atacar(self, pos, dir, tamano):
@@ -301,9 +407,11 @@ class SetLigero(SetAtaque):
 
         coseno = math.cos(dir)
         seno = math.sin(dir)
+        
+        damage = self.damage * (self.multiCrit if  self.probCrit >= random.randint(1, 100) else 1)
 
-        largo = 200
-        corto = 120
+        largo = 200 * self.dimensionesMulti
+        corto = 120 * self.dimensionesMulti
 
         if abs(coseno) > abs(seno):
             dimensiones = (corto, largo)
@@ -313,25 +421,25 @@ class SetLigero(SetAtaque):
         match self.actAtaque:
             case 0:
                 expr = self.mk_hitbox(dir, tamano, dimensiones, largo / 4)  
-                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
 
             case 1:
                 expr = self.mk_hitbox(dir, tamano, dimensiones, - largo / 4)
-                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
 
             case 2:
                 expr = self.mk_hitbox(dir, tamano, dimensiones, largo / 4)
-                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
 
             case 3:
                 expr = self.mk_hitbox(dir, tamano, dimensiones, - largo / 4)
-                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
 
@@ -342,7 +450,7 @@ class SetLigero(SetAtaque):
                     final_dims = [largo + largo / 4, corto + corto]
 
                 expr = self.mk_hitbox(dir, tamano, final_dims)
-                hitbox = Hitbox(expr, pos, final_dims, self.tiempo, self.principal)
+                hitbox = Hitbox(expr, pos, final_dims, self.tiempo, self.principal, damage)
 
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque = 0
@@ -352,16 +460,18 @@ class SetLigero(SetAtaque):
         self.ultimoAtaque = pygame.time.get_ticks()
 
 class Hitbox():
-    def __init__(self, exp, pos, dim, tiempo, prin):
+    def __init__(self, exp, pos, dim, tiempo, prin, danio):
         self.expresion = exp
         self.posicion = self.operar(self.expresion, pos)
         self.dimension = dim
-        self.damage = prin.damage
+        self.damage = danio
         self.tiempoVida = tiempo
         self.temporizador = pygame.time.get_ticks()
         self.principal = prin
         self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
         self.enemigosGolpeados = []
+        
+        
 
     def update(self, pos, enemigos):
         self.posicion = self.operar(self.expresion, pos)

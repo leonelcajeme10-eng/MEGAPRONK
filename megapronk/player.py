@@ -34,7 +34,7 @@ class Player:
         self.ultima_vida = self.vida
         self.prong = Prongs(mapa)
         self.principal = Principal()
-        self.megapronk = 0
+        self.megapronk = 0 
         self.temporizador = 0
         self.megapronkBandera = 0
         self.seleccionando_prong = False
@@ -230,6 +230,14 @@ class Player:
             frame.fill((255, 80, 80, 0), special_flags=pygame.BLEND_RGBA_ADD)
             draw_x += random.randint(-4, 4)
             draw_y += random.randint(-4, 4)
+            
+        if self.megapronkBandera:
+            tiempo = pygame.time.get_ticks()
+
+            if (tiempo // 120) % 2 == 0:
+                frame = frame.copy()
+                frame.fill((120, 0, 220, 0), special_flags=pygame.BLEND_RGBA_ADD)
+            
             
         pantalla.blit(frame, (int(draw_x), int(draw_y)))
             

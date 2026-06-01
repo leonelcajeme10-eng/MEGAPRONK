@@ -16,6 +16,7 @@ from enemigo_mariposa import Mariposa
 from fantasma import Fantasma,Proyectil_enemigo
 from seleccionar_prongs import SeleccionarProngs
 from pantalla_final import PantallaFinal
+from anim import AnimacionMuerte
 
 pygame.init()
 pygame.mixer.init()
@@ -42,6 +43,8 @@ proyectiles = []
 cargar_sonidos(ruta_actual)
 tiempo_de_fantasma = 0
 ejecutando = True
+musica_megapronk = False 
+animacion_muerte = AnimacionMuerte(1920, 1080)
 
 while ejecutando:
     accion = None
@@ -61,8 +64,8 @@ while ejecutando:
                 pause.pausado = False
                 seleccion = SeleccionarProngs(jugador)
                 estado = "juego"
-                pygame.mixer.music.stop()
-
+                pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "gameplay.ogg"))
+                pygame.mixer.music.play(-1)    
 
             elif accion == "salir":
                 ejecutando = False
@@ -75,15 +78,12 @@ while ejecutando:
                 pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "menu.ogg"))
                 pygame.mixer.music.play(-1)
                 
-            if jugador.vida <= 0:
-                estado = "final"
-                
         elif estado == "seleccion":
             seleccion.manejar_evento(evento)
 
             if not seleccion.activo:
                 estado = "juego"
-                
+                        
         elif estado == "final":
             accion = pantalla_final.manejar_evento(evento)
 
@@ -95,6 +95,34 @@ while ejecutando:
     dt = clock.tick(60) / 1000.0
 
     pause.actualizar(dt)
+
+    if estado == "juego" and jugador.vida <= 0:
+        estado = "muriendo"
+        animacion_muerte.iniciar()
+
+    if estado == "muriendo":
+        terminada = animacion_muerte.actualizar_y_dibujar(
+            pantalla, dt, mapa, camara, jugador, enemigos, ui
+        )
+
+        pygame.display.flip()
+
+        if terminada:
+            estado = "final"
+            pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "final.ogg"))
+            pygame.mixer.music.play(-1)
+
+        continue
+    
+    if estado == "juego":
+        if jugador.megapronkBandera and not musica_megapronk:
+            pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "megapronk.ogg"))
+            pygame.mixer.music.play(-1)
+            musica_megapronk = True
+        elif not jugador.megapronkBandera and musica_megapronk:
+            pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "gameplay.ogg"))
+            pygame.mixer.music.play(-1)
+            musica_megapronk = False
     
     if estado == "menu":
         menu.actualizar(dt)

@@ -177,3 +177,36 @@ class AnimadorSlash:
             fase = len(frames) - 1
 
         return frames[fase]
+    
+class AnimacionMuerte:
+    def __init__(self, ancho, alto, duracion=1.5):
+        self.ancho = ancho
+        self.alto = alto
+        self.duracion = duracion
+        self.tiempo = 0
+        self.activa = False
+
+    def iniciar(self):
+        self.tiempo = 0
+        self.activa = True
+
+    def actualizar_y_dibujar(self, pantalla, dt, mapa, camara, jugador, enemigos, ui):
+        self.tiempo += dt
+
+        pantalla.fill((255, 255, 255))
+        mapa.update(pantalla, camara)
+        jugador.dibujar(pantalla, camara)
+
+        for enemigo in enemigos:
+            enemigo.dibujar(pantalla, camara)
+
+        ui.dibujar_hud(pantalla, jugador)
+
+        progreso = min(self.tiempo / self.duracion, 1)
+
+        overlay = pygame.Surface((self.ancho, self.alto))
+        overlay.fill((0, 0, 0))
+        overlay.set_alpha(int(255 * progreso))
+        pantalla.blit(overlay, (0, 0))
+
+        return self.tiempo >= self.duracion

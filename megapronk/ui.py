@@ -55,7 +55,7 @@ class UI:
         self.logo = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "logo.png")).convert_alpha()
         self.megapronk_animando = False
         self.megapronk_tiempo_inicio = 0
-
+        self.megapronk_mostrado = False
         self.escala_actual = None
         self.preparar_escala(1)
 
@@ -302,9 +302,16 @@ class UI:
 
         texto_jugador = self.font.render(f"LV {jugador.nivel_ataque}",True,(255, 240, 180))
         
-        if jugador.megapronkBandera and not self.megapronk_animando:
+        if jugador.megapronkBandera and not self.megapronk_mostrado:
             self.megapronk_animando = True
+            self.megapronk_mostrado = True
             self.megapronk_tiempo_inicio = pygame.time.get_ticks()
+            
+        if not jugador.megapronkBandera:
+            self.megapronk_mostrado = False
+            self.megapronk_animando = False
+
+            porcentaje_megapronk = max(0, 1 - (jugador.megapronk / 50))
 
         if jugador.megapronkBandera:
             pantalla.blit(self.megapronk, (x + 1450, y + 30))
@@ -326,7 +333,8 @@ class UI:
                     center=(pantalla.get_width() // 2, pantalla.get_height() // 2)
                 )
                 pantalla.blit(logo_animado, rect_logo)
-
+            else:
+                self.megapronk_animando = False
 
             pygame.draw.circle(pantalla, (255, 220, 80), (x + 1565, y + 145), 98, 5)
             pygame.draw.circle(pantalla, (180, 80, 255), (x + 1565, y + 145), 108, 3)

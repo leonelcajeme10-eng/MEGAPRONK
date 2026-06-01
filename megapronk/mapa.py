@@ -52,6 +52,44 @@ class Mapa:
         self.ancho_mundo = len(self.mapa[0]) * self.size
         self.alto_mundo = len(self.mapa) * self.size
         self.tiles = []
+        self.cuadro1 = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "cuadro1.png")).convert_alpha()
+        self.cuadro1 = pygame.transform.smoothscale(self.cuadro1, (250, 250))
+        self.cuadro2 = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "cuadro2.png")).convert_alpha()
+        self.cuadro2 = pygame.transform.smoothscale(self.cuadro2, (250, 250))
+        self.cuadro3 = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "cuadro3.png")).convert_alpha()
+        self.cuadro3 = pygame.transform.smoothscale(self.cuadro3, (250, 250))
+        self.cuadro4 = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "cuadro4.png")).convert_alpha()
+        self.cuadro4 = pygame.transform.smoothscale(self.cuadro4, (250, 250))
+        self.cuadro5 = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "cuadro5.png")).convert_alpha()
+        self.cuadro5 = pygame.transform.smoothscale(self.cuadro5, (250, 250))
+        self.cuadro6 = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "cuadro6.png")).convert_alpha()
+        self.cuadro6 = pygame.transform.smoothscale(self.cuadro6, (250, 250))
+        self.alfombra = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "alfombra.png")).convert_alpha()
+        self.alfombra = pygame.transform.smoothscale(self.alfombra, (400, 400))
+        self.libros = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "libros.png")).convert_alpha()
+        self.libros = pygame.transform.smoothscale(self.libros, (120, 120))
+        self.petalos = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "petalos.png")).convert_alpha()
+        self.petalos = pygame.transform.smoothscale(self.petalos, (120, 120))
+        self.sangre = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "petalos.png")).convert_alpha()
+        self.sangre = pygame.transform.smoothscale(self.sangre, (100, 100))
+        self.alfombra2 = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "alfombra2.png")).convert_alpha()
+        self.alfombra2 = pygame.transform.smoothscale(self.alfombra2, (500, 400))
+        self.imagenes_decoraciones = [
+            self.cuadro1,
+            self.cuadro2,
+            self.cuadro3,
+            self.cuadro4,
+            self.cuadro5,
+            self.cuadro6,
+            self.alfombra,
+            self.alfombra2,
+            self.libros,
+            self.petalos,
+            self.sangre
+        ]
+
+        self.decoraciones = []
+        self.generar_decoraciones()
 
         for fila in range(len(self.mapa)):
             fila_tiles = []
@@ -85,12 +123,58 @@ class Mapa:
                 else:
                     tipo = self.tiles[fila][columna]
                     pantalla.blit(self.suelo_base, (x - camara.x, y - camara.y))
+                    
+        for decoracion in self.decoraciones:
+            pantalla.blit(
+            decoracion["imagen"],
+            (decoracion["x"] - camara.x,
+            decoracion["y"] - camara.y))
 
     def update(self,pantalla,camara):
         self.dibujar_mapa(pantalla,camara)
         
-        
+    def generar_decoraciones(self):
+        for fila in range(len(self.mapa)):
+            for columna in range(len(self.mapa[fila])):
 
+                tile = self.mapa[fila][columna]
+
+                if tile == ".":
+                    # Probabilidad de que aparezca decoracion en ese tile
+                    if random.randint(1, 100) <= 4:
+
+                        imagen = random.choice(self.imagenes_decoraciones)
+
+                        x_tile = columna * self.size
+                        y_tile = fila * self.size
+
+                        rect = imagen.get_rect()
+
+                        # Centrar decoracion en el tile
+                        x = x_tile + self.size // 2 - rect.width // 2
+                        y = y_tile + self.size // 2 - rect.height // 2
+
+                        nuevo_rect = pygame.Rect(x, y, rect.width, rect.height)
+
+
+                        if not self.decoracion_choca(nuevo_rect, margen=60):
+                            self.decoraciones.append({
+                            "imagen": imagen,
+                            "x": x,
+                            "y": y,
+                            "rect": nuevo_rect
+                        })     
+
+    def decoracion_choca(self, nuevo_rect, margen=40):
+            rect_con_margen = nuevo_rect.inflate(margen, margen)
+
+            for decoracion in self.decoraciones:
+                rect_existente = decoracion["rect"].inflate(margen, margen)
+
+                if rect_con_margen.colliderect(rect_existente):
+                    return True
+
+            return False
 
 
         

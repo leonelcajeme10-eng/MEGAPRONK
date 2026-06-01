@@ -7,7 +7,7 @@ ruta_actual = os.path.dirname(__file__)
 
 class Fantasma(Enemy):
     COLOR = "white"
-    SPEED = 100
+    SPEED = 90
     VIDA = 100
     DAMAGE = 10
     TAMANO_X = 50
@@ -88,7 +88,7 @@ class Fantasma(Enemy):
 
             direccion = math.atan2(self.dy,self.dx)
 
-            proyectil = Proyectil_enemigo(direccion,self.damage,10,12,centro_x,centro_y)
+            proyectil = Proyectil_enemigo(direccion,self.damage,5,12,centro_x,centro_y)
             proyectiles.append(proyectil)
         
 
@@ -180,4 +180,11 @@ class Proyectil_enemigo:
         self.y += math.sin(self.dir) * self.velocidad
         self.colision_jugador(jugador,camara,proyectiles)
         self.colisiones_pared(mapa.paredes,proyectiles,camara)
+
+
+
         
+        
+
+
+    

@@ -46,6 +46,7 @@ ejecutando = True
 musica_megapronk = False 
 animacion_muerte = AnimacionMuerte(1920, 1080)
 pause.volumen = menu.volumen
+tiempo_aumento = 10.0
 
 while ejecutando:
     accion = None
@@ -192,9 +193,22 @@ while ejecutando:
     mapa.update(pantalla, camara)
     jugador.dibujar(pantalla, camara)
 
+
+
     for enemigo in enemigos:
         enemigo.update(jugador, dt, mapa, camara,enemigos,proyectiles)
         enemigo.dibujar(pantalla, camara)
+
+    tiempo_aumento -= dt
+
+    if tiempo_aumento <= 0:
+        enemigo.VIDA += 20
+        enemigo.DAMAGE += 10
+        enemigo.SPEED += 5
+        enemigo.EXP += 10
+        tiempo_aumento = 10.0
+    
+        
     
     for proyectil in proyectiles:
         proyectil.update(mapa,proyectiles,camara,dt,jugador)

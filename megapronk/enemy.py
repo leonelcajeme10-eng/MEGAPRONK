@@ -24,6 +24,7 @@ class Enemy:
 
             self.tamano_x = self.TAMANO_X
             self.tamano_y = self.TAMANO_Y
+
             self.vida = self.VIDA
             self.speed = self.SPEED
             self.damage = self.DAMAGE
@@ -36,6 +37,8 @@ class Enemy:
             self.tiempo_golpe_visual = 0
             self.duracion_golpe_visual = 160
             self.ultima_vida = self.vida
+            
+
             # Animación
             self.direccion = "down"
             self.animador = None
@@ -176,6 +179,10 @@ class Enemy:
                 jugador.megapronk += 1
                 enemigos.remove(self)
                 jugador.kills += 1
+            
+            
+
+         
         
         def dibujar(self,pantalla,camara):
             draw_x = self.x - camara.x
@@ -226,6 +233,6 @@ class Enemy:
 
             if self.animador is not None:
                 self.animador.set_direccion(self.direccion)
-                    
-        
 
+
+        

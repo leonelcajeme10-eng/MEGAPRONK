@@ -22,3 +22,9 @@ class Mariposa(Enemy):
         "velocidad": 0.12,
         "orden_filas": ["up", "down", "left", "right"]
     }
+
+
+
+
+  
+

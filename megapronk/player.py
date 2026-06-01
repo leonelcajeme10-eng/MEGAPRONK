@@ -334,6 +334,8 @@ class Player:
         self.exp_max += 20
         self.nivel += 1
         self.seleccionando_prong = True
+        self.vida += 10
+        
 
     def iniciar_animacion_ataque(self, direccion):
         self.atacando = True

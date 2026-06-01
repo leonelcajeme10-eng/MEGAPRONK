@@ -1,13 +1,24 @@
 import pygame
+import os
+import sys
 
 
 CACHE_SPRITES = {}
+
+
+def resolver_ruta_asset(ruta):
+    if os.path.isabs(ruta):
+        return ruta
+
+    base = getattr(sys, "_MEIPASS", os.path.dirname(__file__))
+    return os.path.join(base, ruta)
 
 
 def cargar_spritesheet(ruta, columnas=4, filas=4, escala=1, orden_filas=None):
     if orden_filas is None:
         orden_filas = ["up", "down", "left", "right"]
 
+    ruta = resolver_ruta_asset(ruta)
     clave = (ruta, columnas, filas, escala, tuple(orden_filas))
 
     if clave in CACHE_SPRITES:
@@ -93,6 +104,7 @@ class AnimadorMovimiento:
     
 
 def cargar_spritesheet_horizontal(ruta, columnas=5, escala=1):
+        ruta = resolver_ruta_asset(ruta)
         clave = (ruta, columnas, escala, "horizontal")
 
         if clave in CACHE_SPRITES:

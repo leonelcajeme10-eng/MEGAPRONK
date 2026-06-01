@@ -255,7 +255,7 @@ class Player:
             "right": []
         }
 
-        hoja = pygame.image.load("assets/images/player_spritesheet.png").convert_alpha()
+        hoja = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "player_spritesheet.png")).convert_alpha()
 
         frame_ancho = 70
         frame_alto = 100

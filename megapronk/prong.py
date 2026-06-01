@@ -22,7 +22,7 @@ class Prongs:
 class Especial:
     def __init__(self, tecla, prong, velocidad, mapa):
         self.speed = velocidad
-        self.damage = 10
+        self.damage = 20
         self.multiDamage = 1
         self.multiArea = 1
         self.proyectiles = []
@@ -303,7 +303,7 @@ class ProngBomba(Prong):
     def lanzarProyectil(self, dir, pos):
         play_sfx("bomb_shoot", volumen=0.65, cooldown_ms=100) ###
         damage = self.damage * (self.multiCrit if  self.probCrit >= random.randint(1, 100) else 1)
-        proyectil = ProyectilBomba(dir, pos, self.speed * 4, damage, self.especial, 5, self.dimension, self.mapa)
+        proyectil = ProyectilBomba(dir, pos, self.speed * 4, damage * 3, self.especial, 5, self.dimension, self.mapa)
         self.asignar_animacion(proyectil) ###
         self.especial.proyectiles.append([proyectil, "omba"])
         

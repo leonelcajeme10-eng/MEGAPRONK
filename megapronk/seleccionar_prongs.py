@@ -168,7 +168,7 @@ class SeleccionarProngs:
                 pantalla.blit(texto_stat,texto_stat.get_rect(center=(alineacion_x, rect.centery + 155)))
 
     def agregarOpciones(self, especial, nombre):
-        self.bancoOpciones.append(opcionModificador(especial, damageAumento, 20, nombre, "Aumentar daño", self.danio, "+20 daño"))
+        self.bancoOpciones.append(opcionModificador(especial, damageAumento, 20, nombre, "Aumentar daño", self.danio, "+60 daño" if isinstance(especial.Prong, ProngBomba) else "+20 daño")) 
         self.bancoOpciones.append(opcionModificador(especial, disminuirCooldown, 0.5, nombre, "Disminuir cooldown", self.cooldown, "0.5s cooldown"))
         self.bancoOpciones.append(opcionModificador(especial, aumentoProbCrit, 5, nombre, "Probabilidad Crit", self.critico, "5% prob. critico"))
         self.bancoOpciones.append(opcionModificador(especial, aumentoCrit, 0.2, nombre, "Daño Crit", self.danio_critico, "20% daño critico"))

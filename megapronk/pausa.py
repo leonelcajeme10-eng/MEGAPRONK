@@ -43,7 +43,7 @@ class PauseMenu:
 
             if self.botones["salir"].collidepoint(mouse):
                 return "salir"
-            
+                        
         if evento.type == pygame.MOUSEBUTTONDOWN:        
             if self.barra_volumen.collidepoint(evento.pos):
                 self.arrastrando_volumen = True

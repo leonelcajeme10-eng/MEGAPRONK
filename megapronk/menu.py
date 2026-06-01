@@ -50,7 +50,7 @@ class Menu:
 
             if self.botones["salir"].collidepoint(evento.pos):
                 return "salir"
-            
+                        
         if evento.type == pygame.MOUSEBUTTONDOWN:        
             if self.barra_volumen.collidepoint(evento.pos):
                 self.arrastrando_volumen = True
@@ -165,5 +165,5 @@ class Menu:
             ),
             10
         )
-        
+    
         

@@ -45,6 +45,7 @@ tiempo_de_fantasma = 0
 ejecutando = True
 musica_megapronk = False 
 animacion_muerte = AnimacionMuerte(1920, 1080)
+pause.volumen = menu.volumen
 
 while ejecutando:
     accion = None
@@ -56,6 +57,7 @@ while ejecutando:
             accion = menu.manejar_evento(evento)
 
             if accion == "jugar":
+                pause.volumen = menu.volumen
                 jugador = Player(mapa)
                 camara = Camara()
                 enemigos = []
@@ -74,6 +76,7 @@ while ejecutando:
             accion = pause.manejar_evento(evento)
 
             if accion == "salir":
+                menu.volumen = pause.volumen
                 estado = "menu"
                 pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "menu.ogg"))
                 pygame.mixer.music.play(-1)
@@ -88,6 +91,7 @@ while ejecutando:
             accion = pantalla_final.manejar_evento(evento)
 
             if accion == "salir":
+                menu.volumen = pause.volumen
                 estado = "menu"
                 pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "menu.ogg"))
                 pygame.mixer.music.play(-1)

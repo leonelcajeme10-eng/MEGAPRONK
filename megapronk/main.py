@@ -47,6 +47,7 @@ musica_megapronk = False
 animacion_muerte = AnimacionMuerte(1920, 1080)
 pause.volumen = menu.volumen
 tiempo_aumento = 10.0
+numAumento = 1
 
 while ejecutando:
     accion = None
@@ -174,10 +175,10 @@ while ejecutando:
     tiempo_de_fantasma += dt
 
     if tiempo_spawn >= 1:
-        enemigos.append(Mariposa(camara))
+        enemigos.append(Mariposa(camara, numAumento))
         tiempo_spawn = 0
     if tiempo_de_fantasma >= 3:
-        enemigos.append(Fantasma(camara))
+        enemigos.append(Fantasma(camara, numAumento))
         tiempo_de_fantasma = 0
 
 
@@ -202,10 +203,7 @@ while ejecutando:
     tiempo_aumento -= dt
 
     if tiempo_aumento <= 0:
-        enemigo.VIDA += 20
-        enemigo.DAMAGE += 10
-        enemigo.SPEED += 5
-        enemigo.EXP += 10
+        numAumento += 1
         tiempo_aumento = 10.0
     
         

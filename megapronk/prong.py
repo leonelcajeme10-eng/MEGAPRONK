@@ -4,15 +4,17 @@ import os
 import random
 from anim import AnimadorHorizontal, AnimadorSlash
 from audio import play_sfx
+from damage_text import TextoDanio
 ruta_actual = os.path.dirname(__file__)
 
 class Prongs:
-    def __init__(self, mapa):
+    def __init__(self, mapa, textos_danio=None):
         self.prongs = [] 
         self.mapa = mapa
+        self.textos_danio = textos_danio if textos_danio is not None else []
 
     def asignarProng(self, tecla, prong, velocidad = 4):
-        especial = Especial(tecla, prong, velocidad,  self.mapa)
+        especial = Especial(tecla, prong, velocidad, self.mapa, self.textos_danio)
         self.prongs.append(especial)
         return especial
 
@@ -20,7 +22,7 @@ class Prongs:
         funcion(especial, especial.prong, magnitud)
     
 class Especial:
-    def __init__(self, tecla, prong, velocidad, mapa):
+    def __init__(self, tecla, prong, velocidad, mapa, textos_danio=None):
         self.speed = velocidad
         self.damage = 20
         self.multiDamage = 1
@@ -31,6 +33,7 @@ class Especial:
         self.tecla = tecla
         self.Prong = prong(velocidad, self, mapa, self.damage * self.multiDamage, self.multiArea)
         self.mapa = mapa
+        self.textos_danio = textos_danio if textos_danio is not None else []
         self.nivel = 0
         self.megapronk = 0
 
@@ -76,6 +79,7 @@ class Proyectil:
         self.rectangulo = pygame.Rect(self.posicion[0] - self.dimension[0] / 2, self.posicion[1] - self.dimension[1] / 2, self.dimension[0],self.dimension[1])
         self.mapa = mapa
         self.enemigosGolpeados = []
+        self.critico = False
         
         #
         self.animador = None
@@ -113,6 +117,13 @@ class Proyectil:
                 if self.rectangulo.colliderect(enemigo_rect):
                     enemigo.vida -= self.damage
                     self.enemigosGolpeados.append(enemigo)
+                    self.especial.textos_danio.append(
+                        TextoDanio(
+                            (enemigo.x + enemigo.tamano_x / 2, enemigo.y + enemigo.tamano_y / 2),
+                            self.damage,
+                            TextoDanio.COLOR_CRITICO if self.critico else (255, 255, 255),
+                        )
+                    )
                     
                     play_sfx("enemy_hit", volumen=0.5, cooldown_ms=35)###
                     
@@ -237,6 +248,13 @@ class ProyectilBomba(Proyectil):
                 if self.rectangulo.colliderect(enemigo_rect):
                     enemigo.vida -= self.damage
                     self.enemigosGolpeados.append(enemigo)
+                    self.especial.textos_danio.append(
+                        TextoDanio(
+                            (enemigo.x + enemigo.tamano_x / 2, enemigo.y + enemigo.tamano_y / 2),
+                            self.damage,
+                            TextoDanio.COLOR_CRITICO if self.critico else (255, 255, 255),
+                        )
+                    )
 
 class Prong:
     icono = pygame.image.load(os.path.join(ruta_actual, "assets", "ui", "disparo_pronk.png"))
@@ -256,8 +274,10 @@ class Prong:
     
     def lanzarProyectil(self, dir, pos):
         play_sfx("prong_shoot", volumen=0.55, cooldown_ms=60) ###
-        damage = self.damage * (self.multiCrit if  self.probCrit >= random.randint(1, 100) else 1)
+        critico = self.probCrit >= random.randint(1, 100)
+        damage = self.damage * (self.multiCrit if critico else 1)
         proyectil = Proyectil(dir, pos, self.speed * 4, damage, self.especial, 5, self.dimension, self.mapa)
+        proyectil.critico = critico
         self.asignar_animacion(proyectil) ###
         
     ### definir animacion del proyectil
@@ -278,10 +298,13 @@ class BolaFuego(Prong):
 
     def lanzarProyectil(self, dir, pos):
         play_sfx("fireball", volumen=3, cooldown_ms=80)
-        damage = self.damage * (self.multiCrit if  self.probCrit >= random.randint(1, 100) else 1)
+        critico = self.probCrit >= random.randint(1, 100)
+        damage = self.damage * (self.multiCrit if critico else 1)
         proyectil = ProyectilOscilante(dir, pos, self.speed, damage, self.especial, 5, self.dimension, self.mapa, 1)
+        proyectil.critico = critico
         self.asignar_animacion(proyectil) ###
         proyectil = ProyectilOscilante(dir, pos, self.speed, damage, self.especial, 5, self.dimension, self.mapa, -1)
+        proyectil.critico = critico
         self.asignar_animacion(proyectil) ###
         
     #definir animacion del proyectil
@@ -302,8 +325,10 @@ class ProngBomba(Prong):
 
     def lanzarProyectil(self, dir, pos):
         play_sfx("bomb_shoot", volumen=0.65, cooldown_ms=100) ###
-        damage = self.damage * (self.multiCrit if  self.probCrit >= random.randint(1, 100) else 1)
+        critico = self.probCrit >= random.randint(1, 100)
+        damage = self.damage * (self.multiCrit if critico else 1)
         proyectil = ProyectilBomba(dir, pos, self.speed * 4, damage * 3, self.especial, 5, self.dimension, self.mapa)
+        proyectil.critico = critico
         self.asignar_animacion(proyectil) ###
         self.especial.proyectiles.append([proyectil, "omba"])
         
@@ -320,7 +345,7 @@ class ProngBomba(Prong):
         self.especial.proyectiles.append([proyectil, "Bomba"])
 
 class Principal:
-    def __init__(self):
+    def __init__(self, textos_danio=None):
         self.costo = 10
         self.radio = 10
         self.damage = 20
@@ -332,6 +357,7 @@ class Principal:
         self.cooldown = 0.0
         self.set = SetLigero(self.damage * self.multiDamage, self, self.multiDimensiones)
         self.hitbox = [] 
+        self.textos_danio = textos_danio if textos_danio is not None else []
         self.animador_slash = AnimadorSlash(os.path.join(ruta_actual,"assets","images","slash_spritesheet.png"),columnas=3,filas=4,escala=1,orden_filas=["down", "up", "left", "right"])
 
     def atacar(self, pos, dir, tamano):
@@ -430,7 +456,8 @@ class SetLigero(SetAtaque):
         coseno = math.cos(dir)
         seno = math.sin(dir)
         
-        damage = self.damage * (self.multiCrit if  self.probCrit >= random.randint(1, 100) else 1)
+        critico = self.probCrit >= random.randint(1, 100)
+        damage = self.damage * (self.multiCrit if critico else 1)
 
         largo = 200 * self.dimensionesMulti
         corto = 120 * self.dimensionesMulti
@@ -444,25 +471,25 @@ class SetLigero(SetAtaque):
         match self.actAtaque:
             case 0:
                 expr = self.mk_hitbox(dir, tamano, dimensiones, largo / 4)  
-                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage,direccion_texto,0)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage,direccion_texto,0,critico)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
 
             case 1:
                 expr = self.mk_hitbox(dir, tamano, dimensiones, - largo / 4)
-                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage,direccion_texto,1)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage,direccion_texto,1,critico)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
 
             case 2:
                 expr = self.mk_hitbox(dir, tamano, dimensiones, largo / 4)
-                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage,direccion_texto,0)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage,direccion_texto,0,critico)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
 
             case 3:
                 expr = self.mk_hitbox(dir, tamano, dimensiones, - largo / 4)
-                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage,direccion_texto,1)
+                hitbox = Hitbox(expr, pos, dimensiones, self.tiempo, self.principal, damage,direccion_texto,1,critico)
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque += 1
 
@@ -473,7 +500,7 @@ class SetLigero(SetAtaque):
                     final_dims = [largo + largo / 4, corto + corto]
 
                 expr = self.mk_hitbox(dir, tamano, final_dims)
-                hitbox = Hitbox(expr, pos, final_dims, self.tiempo, self.principal, damage,direccion_texto,2)
+                hitbox = Hitbox(expr, pos, final_dims, self.tiempo, self.principal, damage,direccion_texto,2,critico)
 
                 self.principal.nuevaHitbox(hitbox)
                 self.actAtaque = 0
@@ -483,7 +510,7 @@ class SetLigero(SetAtaque):
         self.ultimoAtaque = pygame.time.get_ticks()
 
 class Hitbox():
-    def __init__(self, exp, pos, dim, tiempo, prin, danio, direccion="right", fase_sprite=0):
+    def __init__(self, exp, pos, dim, tiempo, prin, danio, direccion="right", fase_sprite=0, critico=False):
         self.expresion = exp
         self.posicion = self.operar(self.expresion, pos)
         self.dimension = dim
@@ -495,6 +522,7 @@ class Hitbox():
         self.enemigosGolpeados = []
         self.direccion = direccion
         self.fase_sprite = fase_sprite
+        self.critico = critico
         
 
     def update(self, pos, enemigos):
@@ -516,6 +544,13 @@ class Hitbox():
                 if self.rectangulo.colliderect(enemigo_rect):
                     enemigo.vida -= self.damage
                     self.enemigosGolpeados.append(enemigo)
+                    self.principal.textos_danio.append(
+                        TextoDanio(
+                            (enemigo.x + enemigo.tamano_x / 2, enemigo.y + enemigo.tamano_y / 2),
+                            self.damage,
+                            TextoDanio.COLOR_CRITICO if self.critico else (255, 255, 255),
+                        )
+                    )
                     play_sfx("enemy_hit", volumen=0.5, cooldown_ms=35)
 
     def dibujar(self, pantalla, camara):

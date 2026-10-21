@@ -1,6 +1,7 @@
 import pygame
 import math
 from prong import Prongs, Principal
+from modificadores import damageAumentoSet
 from camara import Camara
 from audio import play_sfx
 import random
@@ -32,8 +33,9 @@ class Player:
         self.tiempo_golpe_visual = 0
         self.duracion_golpe_visual = 160
         self.ultima_vida = self.vida
-        self.prong = Prongs(mapa)
-        self.principal = Principal()
+        self.textos_danio = []
+        self.prong = Prongs(mapa, self.textos_danio)
+        self.principal = Principal(self.textos_danio)
         self.megapronk = 0 
         self.temporizador = 0
         self.megapronkBandera = 0
@@ -194,6 +196,10 @@ class Player:
             prong.update(dt, enemigos)
         center = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
         self.principal.update(dt, center, enemigos)
+        self.textos_danio[:] = [
+            texto for texto in self.textos_danio
+            if texto.actualizar(dt)
+        ]
         
         if self.vida < self.ultima_vida:
             self.tiempo_golpe_visual = pygame.time.get_ticks()
@@ -220,6 +226,8 @@ class Player:
         for x in self.principal.hitbox:
             # pygame.draw.rect(pantalla,"blue",camara.aplicar_rect(x.rectangulo))
             x.dibujar(pantalla, camara)
+        for texto in self.textos_danio:
+            texto.dibujar(pantalla, camara)
         golpeado = pygame.time.get_ticks() - self.tiempo_golpe_visual < self.duracion_golpe_visual
         
         if golpeado:
@@ -335,6 +343,7 @@ class Player:
         self.nivel += 1
         self.seleccionando_prong = True
         self.vida += 10
+        damageAumentoSet(self.principal, self.principal.set, 2)
         
 
     def iniciar_animacion_ataque(self, direccion):

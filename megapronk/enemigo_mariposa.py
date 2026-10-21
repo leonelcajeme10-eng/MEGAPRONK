@@ -9,8 +9,8 @@ class Mariposa(Enemy):
     TAMANO_Y = 50
     EXP = 20
 
-    def __init__(self, camara):
-        super().__init__(camara)
+    def __init__(self, camara, aumento):
+        super().__init__(camara, aumento)
 
 
    

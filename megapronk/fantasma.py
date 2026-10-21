@@ -22,8 +22,8 @@ class Fantasma(Enemy):
         "orden_filas": ["up", "down", "left", "right"]
     }
 
-    def __init__(self, camara):
-        super().__init__(camara)
+    def __init__(self, camara, aumento):
+        super().__init__(camara, aumento)
         self.pararse = False
         
     def cooldown_golpe(self,jugador,proyectiles,mapa_rect):

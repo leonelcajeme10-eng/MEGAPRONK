@@ -16,7 +16,7 @@ class Enemy:
         
         ANIMACION_MOVIMIENTO = None
 
-        def __init__(self, camara):
+        def __init__(self, camara, aumento):
             self.x = 50
             self.y = 50
             self.dx = 0
@@ -25,11 +25,11 @@ class Enemy:
             self.tamano_x = self.TAMANO_X
             self.tamano_y = self.TAMANO_Y
 
-            self.vida = self.VIDA
+            self.vida = self.VIDA * (1.15 ** aumento)
             self.speed = self.SPEED
             self.damage = self.DAMAGE
             self.color = self.COLOR
-            self.experiencia = self.EXP
+            self.experiencia = self.EXP + aumento
 
             self.inmunidad = 60
             self.boton_x = False

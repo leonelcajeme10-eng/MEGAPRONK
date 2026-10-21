@@ -18,7 +18,7 @@ class UI:
             "Cinzel-VariableFont_wght.ttf"
         )
 
-        # Imágenes originales
+        # Imagenes originales
         self.marco_hp_original = pygame.image.load(
             os.path.join(ruta_actual, "assets", "ui", "vida_ui.png")
         ).convert_alpha()
@@ -85,6 +85,11 @@ class UI:
         self.font2 = pygame.font.Font(
             self.ruta_fuente,
             max(1, self.s(45))
+        )
+
+        self.font_control = pygame.font.Font(
+            self.ruta_fuente,
+            max(1, self.s(25))
         )
 
         self.marco_hp = self.escalar_imagen(
@@ -293,12 +298,27 @@ class UI:
 
         pantalla.blit(tiempo, tiempo_rect)
 
+    def dibujar_indicador_boton(self, pantalla, letra, centro, color):
+        """Dibuja una etiqueta de botón de control sobre una habilidad."""
+        radio = self.s(18)
+        pygame.draw.circle(pantalla, (18, 18, 24), centro, radio)
+        pygame.draw.circle(pantalla, color, centro, radio, self.s(3))
+
+        texto = self.font_control.render(letra, True, (255, 255, 255))
+        pantalla.blit(texto, texto.get_rect(center=centro))
+
     def dibujar_pronks(self, pantalla, jugador):
         x = self.s(220)
         y = pantalla.get_height() - self.s(310)
 
         pantalla.blit(self.pronks_ui, (x, y))
         pantalla.blit(jugador.icono, (x-185, y+30))
+        self.dibujar_indicador_boton(
+            pantalla,
+            "A",
+            (x - self.s(155), y + self.s(55)),
+            (95, 210, 100),
+        )
 
         texto_jugador = self.font.render(f"LV {jugador.nivel_ataque}",True,(255, 240, 180))
         
@@ -400,6 +420,23 @@ class UI:
             )
 
             pantalla.blit(icono, icono_rect)
+
+            botones_prong = (
+                ("X", (70, 145, 255)),
+                ("Y", (245, 205, 55)),
+                ("B", (230, 75, 65)),
+            )
+            if i < len(botones_prong):
+                letra, color = botones_prong[i]
+                self.dibujar_indicador_boton(
+                    pantalla,
+                    letra,
+                    (
+                        slot_x + slot_ancho - self.s(18),
+                        slot_y + self.s(18),
+                    ),
+                    color,
+                )
             
             texto_lvl = self.font.render(f"LV {prong.nivel}", True, (255, 240, 180))
             texto_rect = texto_lvl.get_rect(center=(slot_x + slot_ancho // 2 + 10, slot_y + slot_alto + self.s(35) +25))

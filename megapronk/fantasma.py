@@ -22,8 +22,8 @@ class Fantasma(Enemy):
         "orden_filas": ["up", "down", "left", "right"]
     }
 
-    def __init__(self, camara):
-        super().__init__(camara)
+    def __init__(self, camara, nivel_dificultad=0, es_elite=False):
+        super().__init__(camara, nivel_dificultad, es_elite)
         self.pararse = False
         
     def cooldown_golpe(self,jugador,proyectiles,mapa_rect):
@@ -63,8 +63,9 @@ class Fantasma(Enemy):
 
 
             if self.distancia > 400:
-                mov_x = self.dx * self.speed * dt
-                mov_y = self.dy * self.speed * dt 
+                velocidad = self.velocidad_actual()
+                mov_x = self.dx * velocidad * dt
+                mov_y = self.dy * velocidad * dt
                 
                 if mov_x != 0:
                     self.x += mov_x
@@ -77,7 +78,6 @@ class Fantasma(Enemy):
                     self.colisiones(mapa_rect)
         
 
-    
     def ataque_enemigo(self,jugador,proyectiles,mapa_rect):
             enemigo_rect = pygame.Rect(self.x,self.y,self.tamano_x,self.tamano_y)
             jugador_rect = pygame.Rect(jugador.x,jugador.y,jugador.tamano_x,jugador.tamano_y)
@@ -180,11 +180,3 @@ class Proyectil_enemigo:
         self.y += math.sin(self.dir) * self.velocidad
         self.colision_jugador(jugador,camara,proyectiles)
         self.colisiones_pared(mapa.paredes,proyectiles,camara)
-
-
-
-        
-        
-
-
-    

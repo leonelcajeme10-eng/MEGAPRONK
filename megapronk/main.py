@@ -17,11 +17,14 @@ from fantasma import Fantasma,Proyectil_enemigo
 from seleccionar_prongs import SeleccionarProngs
 from pantalla_final import PantallaFinal
 from anim import AnimacionMuerte
+from controles import Control
+from dificultad import DirectorDificultad
 
 pygame.init()
 pygame.mixer.init()
 pygame.mixer.set_num_channels(32)
 pantalla = pygame.display.set_mode((1920,1080))
+control = Control()
 pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "menu.ogg"))
 pygame.mixer.music.set_volume(0.8)
 pygame.mixer.music.play(-1)
@@ -30,27 +33,29 @@ clock = pygame.time.Clock()
 pygame.display.set_caption("Megapronk")
 
 mapa = Mapa()
-jugador = Player(mapa)
+jugador = Player(mapa, control)
 camara = Camara()
 ui = UI()
-pantalla_final = PantallaFinal(1920, 1080)
+pantalla_final = PantallaFinal(1920, 1080, control)
 tiempo_spawn = 0
 enemigos = []
-pause = PauseMenu(1920, 1080)
-menu = Menu(1920, 1080)
+pause = PauseMenu(1920, 1080, control)
+menu = Menu(1920, 1080, control)
 estado = "menu"
 proyectiles = []
 cargar_sonidos(ruta_actual)
 tiempo_de_fantasma = 0
+director_dificultad = DirectorDificultad()
 ejecutando = True
 musica_megapronk = False 
 animacion_muerte = AnimacionMuerte(1920, 1080)
 pause.volumen = menu.volumen
-tiempo_aumento = 10.0
 
 while ejecutando:
     accion = None
     for evento in pygame.event.get():
+        control.procesar_evento(evento)
+
         if evento.type == pygame.QUIT:
             ejecutando = False
 
@@ -59,13 +64,15 @@ while ejecutando:
 
             if accion == "jugar":
                 pause.volumen = menu.volumen
-                jugador = Player(mapa)
+                jugador = Player(mapa, control)
                 camara = Camara()
                 enemigos = []
                 proyectiles = []
                 tiempo_spawn = 0
+                tiempo_de_fantasma = 0
+                director_dificultad = DirectorDificultad()
                 pause.pausado = False
-                seleccion = SeleccionarProngs(jugador)
+                seleccion = SeleccionarProngs(jugador, control)
                 estado = "juego"
                 pygame.mixer.music.load(os.path.join(ruta_actual, "assets", "music", "gameplay.ogg"))
                 pygame.mixer.music.play(-1)    
@@ -172,12 +179,25 @@ while ejecutando:
 
     tiempo_spawn += dt
     tiempo_de_fantasma += dt
+    nivel_dificultad = director_dificultad.nivel(jugador.tiempo)
 
-    if tiempo_spawn >= 1:
-        enemigos.append(Mariposa(camara))
+    if tiempo_spawn >= director_dificultad.intervalo_mariposa(nivel_dificultad):
+        if director_dificultad.puede_generar(len(enemigos), nivel_dificultad):
+            es_elite = director_dificultad.debe_generar_elite(
+                jugador.tiempo,
+                enemigos,
+                nivel_dificultad,
+            )
+            enemigos.append(Mariposa(camara, nivel_dificultad, es_elite))
         tiempo_spawn = 0
-    if tiempo_de_fantasma >= 3:
-        enemigos.append(Fantasma(camara))
+    if tiempo_de_fantasma >= director_dificultad.intervalo_fantasma(nivel_dificultad):
+        if director_dificultad.puede_generar(len(enemigos), nivel_dificultad):
+            es_elite = director_dificultad.debe_generar_elite(
+                jugador.tiempo,
+                enemigos,
+                nivel_dificultad,
+            )
+            enemigos.append(Fantasma(camara, nivel_dificultad, es_elite))
         tiempo_de_fantasma = 0
 
 
@@ -199,17 +219,6 @@ while ejecutando:
         enemigo.update(jugador, dt, mapa, camara,enemigos,proyectiles)
         enemigo.dibujar(pantalla, camara)
 
-    tiempo_aumento -= dt
-
-    if tiempo_aumento <= 0:
-        enemigo.VIDA += 20
-        enemigo.DAMAGE += 10
-        enemigo.SPEED += 5
-        enemigo.EXP += 10
-        tiempo_aumento = 10.0
-    
-        
-    
     for proyectil in proyectiles:
         proyectil.update(mapa,proyectiles,camara,dt,jugador)
         proyectil.dibujar(pantalla,camara)

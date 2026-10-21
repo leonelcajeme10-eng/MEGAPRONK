@@ -4,7 +4,8 @@ import os
 ruta_actual = os.path.dirname(__file__)
 
 class PauseMenu:
-    def __init__(self, ancho, alto):
+    def __init__(self, ancho, alto, control=None):
+        self.control = control
         self.ancho = ancho
         self.alto = alto
         self.pausado = False
@@ -14,6 +15,8 @@ class PauseMenu:
             "continuar": pygame.Rect(ancho//2 - 250, alto//2 - 30, 500, 80),
             "salir": pygame.Rect(ancho//2 - 250, alto//2 + 90, 500, 80)
         }
+        self.opciones = list(self.botones)
+        self.indice_seleccionado = 0
         self.borde_menu = pygame.image.load(
         os.path.join(ruta_actual, "assets", "ui", "borde_pausa.png"))
         self.borde_menu = pygame.transform.smoothscale(self.borde_menu, (925,575))
@@ -31,30 +34,86 @@ class PauseMenu:
             ])
 
     def manejar_evento(self, evento):
+        accion_control = (
+            self.control.accion_menu(evento) if self.control is not None else None
+        )
+        if accion_control == "pausa":
+            self.pausado = not self.pausado
+        elif self.pausado and accion_control == "arriba":
+            self.indice_seleccionado = (
+                self.indice_seleccionado - 1
+            ) % len(self.opciones)
+        elif self.pausado and accion_control == "abajo":
+            self.indice_seleccionado = (
+                self.indice_seleccionado + 1
+            ) % len(self.opciones)
+        elif self.pausado and accion_control == "izquierda":
+            self.volumen = max(0, self.volumen - 0.05)
+        elif self.pausado and accion_control == "derecha":
+            self.volumen = min(1, self.volumen + 0.05)
+        elif self.pausado and accion_control == "aceptar":
+            opcion = self.opciones[self.indice_seleccionado]
+            if opcion == "continuar":
+                self.pausado = False
+            else:
+                return "salir"
+        elif self.pausado and accion_control == "cancelar":
+            self.pausado = False
+
         if evento.type == pygame.KEYDOWN:
             if evento.key == pygame.K_ESCAPE:
                 self.pausado = not self.pausado
 
+            elif self.pausado and evento.key in (pygame.K_w, pygame.K_UP):
+                self.indice_seleccionado = (
+                    self.indice_seleccionado - 1
+                ) % len(self.opciones)
+            elif self.pausado and evento.key in (pygame.K_s, pygame.K_DOWN):
+                self.indice_seleccionado = (
+                    self.indice_seleccionado + 1
+                ) % len(self.opciones)
+            elif self.pausado and evento.key in (pygame.K_a, pygame.K_LEFT):
+                self.volumen = max(0, self.volumen - 0.05)
+            elif self.pausado and evento.key in (pygame.K_d, pygame.K_RIGHT):
+                self.volumen = min(1, self.volumen + 0.05)
+            elif self.pausado and evento.key in (
+                pygame.K_RETURN,
+                pygame.K_KP_ENTER,
+                pygame.K_SPACE,
+            ):
+                opcion = self.opciones[self.indice_seleccionado]
+                if opcion == "continuar":
+                    self.pausado = False
+                else:
+                    return "salir"
+
         if self.pausado and evento.type == pygame.MOUSEBUTTONDOWN:
-            mouse = pygame.mouse.get_pos()
+            mouse = evento.pos
 
             if self.botones["continuar"].collidepoint(mouse):
+                self.indice_seleccionado = self.opciones.index("continuar")
                 self.pausado = False
 
             if self.botones["salir"].collidepoint(mouse):
+                self.indice_seleccionado = self.opciones.index("salir")
                 return "salir"
-                        
-        if evento.type == pygame.MOUSEBUTTONDOWN:        
+
             if self.barra_volumen.collidepoint(evento.pos):
                 self.arrastrando_volumen = True
 
-        if evento.type == pygame.MOUSEBUTTONUP:
+        if self.pausado and evento.type == pygame.MOUSEBUTTONUP:
             self.arrastrando_volumen = False
 
-        if evento.type == pygame.MOUSEMOTION and self.arrastrando_volumen:
+        if self.pausado and evento.type == pygame.MOUSEMOTION and self.arrastrando_volumen:
             mouse_x = evento.pos[0]
             self.volumen = (mouse_x - self.barra_volumen.x) / self.barra_volumen.width
             self.volumen = max(0, min(1, self.volumen))
+
+        if self.pausado and evento.type == pygame.MOUSEMOTION:
+            for indice, opcion in enumerate(self.opciones):
+                if self.botones[opcion].collidepoint(evento.pos):
+                    self.indice_seleccionado = indice
+                    break
         
         pygame.mixer.music.set_volume(self.volumen)
 
@@ -87,12 +146,12 @@ class PauseMenu:
         for x, y, radio, velocidad in self.particulas:
             pygame.draw.circle(pantalla,(212, 175, 55), (int(x), int(y)), radio)
 
-    def dibujar_boton(self, pantalla, rect, texto):
+    def dibujar_boton(self, pantalla, rect, texto, seleccionado=False):
         mouse = pygame.mouse.get_pos()
-        hover = rect.collidepoint(mouse)
+        activo = seleccionado or rect.collidepoint(mouse)
 
-        color_fondo = (25, 20, 15)
-        color_borde = (255, 210, 80) if hover else (160, 120, 40)
+        color_fondo = (55, 40, 20) if seleccionado else (25, 20, 15)
+        color_borde = (255, 210, 80) if activo else (160, 120, 40)
 
         pygame.draw.rect(pantalla, color_fondo, rect, border_radius=12)
         pygame.draw.rect(pantalla, color_borde, rect, width=4, border_radius=12)
@@ -123,8 +182,13 @@ class PauseMenu:
         titulo = self.font_titulo.render("PAUSA", True, (212, 175, 55))
         pantalla.blit(titulo, (menu.centerx - titulo.get_width() // 2,menu.y + 45))
 
-        self.dibujar_boton(pantalla, self.botones["continuar"], "CONTINUAR")
-        self.dibujar_boton(pantalla, self.botones["salir"], "SALIR")
+        for indice, opcion in enumerate(self.opciones):
+            self.dibujar_boton(
+                pantalla,
+                self.botones[opcion],
+                opcion.upper(),
+                indice == self.indice_seleccionado,
+            )
         
         icono = self.font_boton.render("♪", True, (255, 210, 80))
         pantalla.blit(icono, (self.ancho - 180, self.alto - 115))

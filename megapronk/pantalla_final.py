@@ -5,7 +5,8 @@ import random
 ruta_actual = os.path.dirname(__file__)
 
 class PantallaFinal:
-    def __init__(self, ancho, alto):
+    def __init__(self, ancho, alto, control=None):
+        self.control = control
         self.ancho = ancho
         self.alto = alto
         self.font_titulo = pygame.font.SysFont("Georgia", 80)
@@ -57,9 +58,21 @@ class PantallaFinal:
             pygame.draw.circle(pantalla,(212, 175, 55), (int(x), int(y)), radio)
             
     def manejar_evento(self, evento):
-        
+        accion_control = (
+            self.control.accion_menu(evento) if self.control is not None else None
+        )
+        if accion_control in ("aceptar", "cancelar"):
+            return "salir"
+
+        if evento.type == pygame.KEYDOWN and evento.key in (
+            pygame.K_RETURN,
+            pygame.K_KP_ENTER,
+            pygame.K_SPACE,
+        ):
+            return "salir"
+
         if evento.type == pygame.MOUSEBUTTONDOWN:
-            mouse = pygame.mouse.get_pos()
+            mouse = evento.pos
 
             if self.boton_salir.collidepoint(mouse):
                 return "salir"

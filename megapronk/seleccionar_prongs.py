@@ -8,7 +8,8 @@ from prong import Prong, BolaFuego, ProngBomba
 from modificadores import damageAumento, disminuirCooldown, aumentarVelocidad, damageAumentoSet, aumentoCritSet, aumentoCrit, aumentoProbCrit, aumentoProbCritSet
 
 class SeleccionarProngs:
-    def __init__(self, jugador):
+    def __init__(self, jugador, control=None):
+        self.control = control
         self.opciones = []
         self.activo = False
         self.cartas = []
@@ -18,6 +19,7 @@ class SeleccionarProngs:
         self.alto = 1080
         self.cont = 0
         self.slot_actual = 0
+        self.indice_seleccionado = 0
         self.teclas = [pygame.K_1, pygame.K_2, pygame.K_3]
         self.tecla = self.teclas[self.slot_actual]
         self.jugador = jugador
@@ -50,58 +52,96 @@ class SeleccionarProngs:
 
     def abrir(self):
         self.activo = True
+        self.indice_seleccionado = 0
         self.tiempo_apertura = pygame.time.get_ticks()
 
     def cerrar(self):
         self.activo = False
         
+    def elegir_opcion(self, indice):
+        """Aplica la carta indicada desde el mouse o el teclado."""
+        opcion = self.opciones[indice]
+        tecla_presionada = self.teclas[self.slot_actual]
+
+        if isinstance(opcion, OpcionProng):
+            especial = opcion.ejecutar(tecla_presionada)
+            self.agregarOpciones(especial, opcion.nombre)
+            self.bancoOpciones.remove(opcion)
+            self.slot_actual += 1 if self.slot_actual < 2 else 0
+
+        elif isinstance(opcion, opcionModificador):
+            opcion.ejecutar()
+            if opcion.descripcion == "disminuye cooldown":
+                if opcion.especial.cooldown_time <= 1:
+                    self.bancoOpciones.remove(opcion)
+            elif opcion.descripcion == "Probabilidad Crit":
+                if opcion.especial.Prong.probCrit >= 100:
+                    self.bancoOpciones.remove(opcion)
+
+        elif isinstance(opcion, opcionJugador):
+            opcion.ejecutar()
+            self.jugador.nivel_ataque += 1
+            if opcion.descripcion == "Aumentar Velocidad":
+                if self.jugador.speed >= 20:
+                    self.bancoOpciones.remove(opcion)
+
+        elif isinstance(opcion, OpcionSet):
+            opcion.ejecutar()
+            self.jugador.nivel_ataque += 1
+            if opcion.descripcion == "Probabilidad Crit":
+                if opcion.principal.set.probCrit >= 100:
+                    self.bancoOpciones.remove(opcion)
+
+        self.asignarOpciones()
+        self.cerrar()
+
     def manejar_evento(self, evento):
         if not self.activo:
             return None
-        
-        tiempo_actual = pygame.time.get_ticks()
-        
-        if tiempo_actual - self.tiempo_apertura < 300:
-            return
-        
+
+        if pygame.time.get_ticks() - self.tiempo_apertura < 300:
+            return None
+
+        accion_control = (
+            self.control.accion_menu(evento) if self.control is not None else None
+        )
+        if accion_control in ("izquierda", "arriba"):
+            self.indice_seleccionado = (
+                self.indice_seleccionado - 1
+            ) % len(self.opciones)
+        elif accion_control in ("derecha", "abajo"):
+            self.indice_seleccionado = (
+                self.indice_seleccionado + 1
+            ) % len(self.opciones)
+        elif accion_control == "aceptar":
+            self.elegir_opcion(self.indice_seleccionado)
+            return None
+
+        if evento.type == pygame.KEYDOWN:
+            if evento.key in (pygame.K_a, pygame.K_LEFT, pygame.K_w, pygame.K_UP):
+                self.indice_seleccionado = (
+                    self.indice_seleccionado - 1
+                ) % len(self.opciones)
+            elif evento.key in (pygame.K_d, pygame.K_RIGHT, pygame.K_s, pygame.K_DOWN):
+                self.indice_seleccionado = (
+                    self.indice_seleccionado + 1
+                ) % len(self.opciones)
+            elif evento.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE):
+                self.elegir_opcion(self.indice_seleccionado)
+                return None
+
+        if evento.type == pygame.MOUSEMOTION:
+            for indice, rect in enumerate(self.cartas):
+                if rect.collidepoint(evento.pos):
+                    self.indice_seleccionado = indice
+                    break
+
         if evento.type == pygame.MOUSEBUTTONDOWN:
-            mouse = pygame.mouse.get_pos()
-            tecla_presionada = self.teclas[self.slot_actual] 
-            
-            for i, rect in enumerate(self.cartas):
-                if rect.collidepoint(mouse):
-                    if isinstance(self.opciones[i], OpcionProng):
-
-                        especial = self.opciones[i].ejecutar(tecla_presionada)
-                        
-                        self.agregarOpciones(especial, self.opciones[i].nombre)
-                        self.bancoOpciones.remove(self.opciones[i])
-                        self.slot_actual += 1 if self.slot_actual < 2 else 0
-
-                    elif isinstance(self.opciones[i], opcionModificador):
-                        self.opciones[i].ejecutar()
-                        if self.opciones[i].descripcion == "disminuye cooldown":
-                            if self.opciones[i].especial.cooldown_time <= 1:
-                                self.bancoOpciones.remove(self.opciones[i])
-                        elif self.opciones[i].descripcion =="Probabilidad Crit":
-                            if self.opciones[i].especial.Prong.probCrit >= 100:
-                                self.bancoOpciones.remove(self.opciones[i])
-
-                    elif isinstance(self.opciones[i], opcionJugador):
-                        self.opciones[i].ejecutar()
-                        if self.opciones[i].descripcion == "Aumentar Velocidad":
-                            if self.jugador.speed >= 20:
-                                self.bancoOpciones.remove(self.opciones[i])
-
-                    elif isinstance(self.opciones[i], OpcionSet):
-                        self.opciones[i].ejecutar()
-                        if self.opciones[i].descripcion =="Probabilidad Crit":
-                            if self.opciones[i].principal.set.probCrit >= 100:
-                                self.bancoOpciones.remove(self.opciones[i])
-                                                 
-                    self.asignarOpciones()
-                    self.cerrar()
-                    return
+            for indice, rect in enumerate(self.cartas):
+                if rect.collidepoint(evento.pos):
+                    self.indice_seleccionado = indice
+                    self.elegir_opcion(indice)
+                    return None
 
     def dibujar(self, pantalla):
         if not self.activo:
@@ -131,6 +171,15 @@ class SeleccionarProngs:
             pygame.draw.rect(pantalla,(10, 8, 8),fondo,border_radius=12)
 
             pantalla.blit(self.marco_carta,(rect.x - 20, rect.y - 20))
+
+            if i == self.indice_seleccionado:
+                pygame.draw.rect(
+                    pantalla,
+                    (255, 210, 80),
+                    fondo,
+                    width=5,
+                    border_radius=12,
+                )
             
             icono_principal = None
             icono_atributo = None

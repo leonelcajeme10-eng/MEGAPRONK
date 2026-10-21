@@ -4,6 +4,7 @@ from prong import Prongs, Principal
 from modificadores import damageAumentoSet
 from camara import Camara
 from audio import play_sfx
+from controles import Control
 import random
 import os
 ruta_actual = os.path.dirname(__file__)
@@ -11,9 +12,10 @@ ruta_actual = os.path.dirname(__file__)
 class Player:
     icono = pygame.image.load(os.path.join(ruta_actual, "assets", "images", "icono_jugador.png"))
     icono = pygame.transform.smoothscale(icono, (185, 185))
-    def __init__(self, mapa):
-        self.x = 700
-        self.y = 700
+    def __init__(self, mapa, control=None):
+        self.control = control
+        self.x = 3000
+        self.y = 3000
         self.vida = 100
         self.vida_max = 100
         self.mana = 0
@@ -56,6 +58,8 @@ class Player:
         self.frame_ataque = 0
         self.velocidad_attack = 70
         self.ultimo_cambio_frame_ataque = pygame.time.get_ticks()
+        # Se conserva esta dirección cuando se suelta el stick izquierdo.
+        self.apuntado_control = (1.0, 0.0)
 
 
         self.velocidad_walk = 120
@@ -73,21 +77,32 @@ class Player:
         self.dx = 0
         self.dy = 0
 
-        if keys[pygame.K_a]:
-            self.dx = -self.speed
-            self.direccion = "left"
+        movimiento_control = (0.0, 0.0)
+        if self.control is not None:
+            movimiento_control = self.control.movimiento()
+            if movimiento_control != (0.0, 0.0):
+                self.apuntado_control = movimiento_control
 
-        if keys[pygame.K_d]:
-            self.dx = self.speed
-            self.direccion = "right"
+        if movimiento_control != (0.0, 0.0):
+            self.dx = movimiento_control[0] * self.speed
+            self.dy = movimiento_control[1] * self.speed
+            self.actualizar_direccion_movimiento(self.dx, self.dy)
+        else:
+            if keys[pygame.K_a]:
+                self.dx = -self.speed
+                self.direccion = "left"
 
-        if keys[pygame.K_w]:
-            self.dy = -self.speed
-            self.direccion = "up"
-            
-        if keys[pygame.K_s]:
-            self.dy = self.speed
-            self.direccion = "down"
+            if keys[pygame.K_d]:
+                self.dx = self.speed
+                self.direccion = "right"
+
+            if keys[pygame.K_w]:
+                self.dy = -self.speed
+                self.direccion = "up"
+
+            if keys[pygame.K_s]:
+                self.dy = self.speed
+                self.direccion = "down"
             
             
         if self.dx != 0 or self.dy != 0:
@@ -100,26 +115,55 @@ class Player:
             if keys[prong.tecla]:
                 self.lanzarEspecial(camara, prong)
 
+        if self.control is not None:
+            for indice, prong in enumerate(self.prong.prongs):
+                if indice >= len(Control.BOTONES_ESPECIALES):
+                    break
+                boton = Control.BOTONES_ESPECIALES[indice]
+                if self.control.boton_presionado(boton):
+                    self.lanzarEspecial(
+                        camara,
+                        prong,
+                        self.direccion_apuntado_control(),
+                    )
+
         botones = pygame.mouse.get_pressed()
 
         if botones[0]:
             self.ataquePrincipal(camara)
 
+        if self.control is not None and (
+            self.control.boton_presionado(Control.BOTON_ATAQUE)
+            or self.control.gatillo_derecho_presionado()
+        ):
+            self.ataquePrincipal(camara, self.direccion_apuntado_control())
+
+    def actualizar_direccion_movimiento(self, dx, dy):
+        if abs(dx) >= abs(dy):
+            self.direccion = "right" if dx > 0 else "left"
+        else:
+            self.direccion = "down" if dy > 0 else "up"
+
+    def direccion_apuntado_control(self):
+        return math.atan2(self.apuntado_control[1], self.apuntado_control[0])
+
     def agregarProng(self, tecla, especial):
         return self.prong.asignarProng(tecla, especial)
 
-    def lanzarEspecial(self, camara, especial):
-        mouse = pygame.mouse.get_pos()
-        mouse_mundo = [mouse[0] + camara.x, mouse[1] + camara.y]
+    def lanzarEspecial(self, camara, especial, dir=None):
         centro = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
-        dir = math.atan2(mouse_mundo[1] - centro[1], mouse_mundo[0] - centro[0])
+        if dir is None:
+            mouse = pygame.mouse.get_pos()
+            mouse_mundo = [mouse[0] + camara.x, mouse[1] + camara.y]
+            dir = math.atan2(mouse_mundo[1] - centro[1], mouse_mundo[0] - centro[0])
         especial.nuevoProyectil(dir, [centro[0] + math.cos(dir) * 40, centro[1] + math.sin(dir) * 40 ])
 
-    def ataquePrincipal(self, camara):
-        mouse = pygame.mouse.get_pos()
-        mouse_mundo = [mouse[0] + camara.x, mouse[1] + camara.y]
-        centro = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
-        dir = math.atan2(mouse_mundo[1] - centro[1], mouse_mundo[0] - centro[0])
+    def ataquePrincipal(self, camara, dir=None):
+        if dir is None:
+            mouse = pygame.mouse.get_pos()
+            mouse_mundo = [mouse[0] + camara.x, mouse[1] + camara.y]
+            centro = [self.x + self.tamano_x / 2, self.y + self.tamano_y / 2]
+            dir = math.atan2(mouse_mundo[1] - centro[1], mouse_mundo[0] - centro[0])
         grado = math.degrees(dir)
         grado = grado % 360
 

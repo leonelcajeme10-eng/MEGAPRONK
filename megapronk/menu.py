@@ -6,7 +6,8 @@ ruta_actual = os.path.dirname(__file__)
 
 
 class Menu:
-    def __init__(self, ancho, alto):
+    def __init__(self, ancho, alto, control=None):
+        self.control = control
         self.ancho = ancho
         self.alto = alto
         self.font_titulo = pygame.font.SysFont("Georgia", 90)
@@ -21,6 +22,9 @@ class Menu:
             "jugar": pygame.Rect(ancho//2 - 250, alto//2 + 50, 500, 80),
             "salir": pygame.Rect(ancho//2 - 250, alto//2 + 220, 500, 80)
         }
+        # El índice permite usar el menú aunque el mouse no se esté moviendo.
+        self.opciones = list(self.botones)
+        self.indice_seleccionado = 0
         self.borde_menu = pygame.image.load(
             os.path.join(ruta_actual, "assets", "ui", "borde_pausa.png")
         ).convert_alpha()
@@ -43,15 +47,51 @@ class Menu:
         ])
 
     def manejar_evento(self, evento):
-        
+        accion_control = (
+            self.control.accion_menu(evento) if self.control is not None else None
+        )
+        if accion_control == "arriba":
+            self.indice_seleccionado = (
+                self.indice_seleccionado - 1
+            ) % len(self.opciones)
+        elif accion_control == "abajo":
+            self.indice_seleccionado = (
+                self.indice_seleccionado + 1
+            ) % len(self.opciones)
+        elif accion_control == "izquierda":
+            self.volumen = max(0, self.volumen - 0.05)
+        elif accion_control == "derecha":
+            self.volumen = min(1, self.volumen + 0.05)
+        elif accion_control == "aceptar":
+            return self.opciones[self.indice_seleccionado]
+        elif accion_control == "cancelar":
+            return "salir"
+
+        if evento.type == pygame.KEYDOWN:
+            if evento.key in (pygame.K_w, pygame.K_UP):
+                self.indice_seleccionado = (
+                    self.indice_seleccionado - 1
+                ) % len(self.opciones)
+            elif evento.key in (pygame.K_s, pygame.K_DOWN):
+                self.indice_seleccionado = (
+                    self.indice_seleccionado + 1
+                ) % len(self.opciones)
+            elif evento.key in (pygame.K_a, pygame.K_LEFT):
+                self.volumen = max(0, self.volumen - 0.05)
+            elif evento.key in (pygame.K_d, pygame.K_RIGHT):
+                self.volumen = min(1, self.volumen + 0.05)
+            elif evento.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE):
+                return self.opciones[self.indice_seleccionado]
+
         if evento.type == pygame.MOUSEBUTTONDOWN:
             if self.botones["jugar"].collidepoint(evento.pos):
+                self.indice_seleccionado = self.opciones.index("jugar")
                 return "jugar"
 
             if self.botones["salir"].collidepoint(evento.pos):
+                self.indice_seleccionado = self.opciones.index("salir")
                 return "salir"
-                        
-        if evento.type == pygame.MOUSEBUTTONDOWN:        
+
             if self.barra_volumen.collidepoint(evento.pos):
                 self.arrastrando_volumen = True
 
@@ -62,6 +102,12 @@ class Menu:
             mouse_x = evento.pos[0]
             self.volumen = (mouse_x - self.barra_volumen.x) / self.barra_volumen.width
             self.volumen = max(0, min(1, self.volumen))
+
+        if evento.type == pygame.MOUSEMOTION:
+            for indice, opcion in enumerate(self.opciones):
+                if self.botones[opcion].collidepoint(evento.pos):
+                    self.indice_seleccionado = indice
+                    break
         
         pygame.mixer.music.set_volume(self.volumen)
 
@@ -92,12 +138,12 @@ class Menu:
             elif particula[0] > self.ancho:
                 particula[0] = 0
 
-    def dibujar_boton(self, pantalla, rect, texto):
+    def dibujar_boton(self, pantalla, rect, texto, seleccionado=False):
         mouse = pygame.mouse.get_pos()
-        hover = rect.collidepoint(mouse)
+        activo = seleccionado or rect.collidepoint(mouse)
 
-        color_fondo = (25, 20, 15)
-        color_borde = (255, 210, 80) if hover else (160, 120, 40)
+        color_fondo = (55, 40, 20) if seleccionado else (25, 20, 15)
+        color_borde = (255, 210, 80) if activo else (160, 120, 40)
 
         pygame.draw.rect(pantalla, color_fondo, rect, border_radius=12)
         pygame.draw.rect(pantalla, color_borde, rect, width=4, border_radius=12)
@@ -117,8 +163,13 @@ class Menu:
         menu = pygame.Rect(self.ancho // 2 - 320, self.alto // 2 - 30, 645, 390)
         pygame.draw.rect(pantalla, (10, 8, 8), menu, border_radius=18)
         pantalla.blit(self.borde_menu, (borde_x, borde_y))
-        self.dibujar_boton(pantalla, self.botones["jugar"], "JUGAR")
-        self.dibujar_boton(pantalla, self.botones["salir"], "SALIR")
+        for indice, opcion in enumerate(self.opciones):
+            self.dibujar_boton(
+                pantalla,
+                self.botones[opcion],
+                opcion.upper(),
+                indice == self.indice_seleccionado,
+            )
         
         pantalla.blit(self.fondo_volumen, (1520, 940))
         pantalla.blit(self.logo, (self.ancho // 2 - 300, self.alto//2 - 500 + logo_y_anim) )
@@ -165,5 +216,3 @@ class Menu:
             ),
             10
         )
-    
-        
